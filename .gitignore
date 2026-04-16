@@ -1,0 +1,5 @@
+node_modules/
+dist/
+packages/backend/dist/
+packages/backend/data/uploads/
+*.tsbuildinfo

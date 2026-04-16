@@ -1,0 +1,39 @@
+{
+  "name": "Example Corp",
+  "colors": {
+    "primary": "#dc2626",
+    "secondary": "#78716c",
+    "accent": "#ea580c",
+    "text": "#292524",
+    "background": "#fafaf9",
+    "heading": "#1c1917"
+  },
+  "fonts": {
+    "heading": "Roboto",
+    "body": "Roboto",
+    "size": "medium"
+  },
+  "layout": {
+    "style": "two-column",
+    "headerStyle": "compact",
+    "sectionOrder": [
+      "personal",
+      "summary",
+      "experience",
+      "education",
+      "skills",
+      "certifications",
+      "projects",
+      "products",
+      "languages",
+      "references"
+    ],
+    "showPhoto": true,
+    "pageMargins": {
+      "top": 30,
+      "right": 35,
+      "bottom": 30,
+      "left": 35
+    }
+  }
+}

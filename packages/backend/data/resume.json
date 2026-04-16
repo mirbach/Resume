@@ -1,0 +1,336 @@
+{
+  "personal": {
+    "name": "Max Mustermann",
+    "title": {
+      "en": "Senior Software Engineer",
+      "de": "Senior Softwareentwickler"
+    },
+    "email": "max.mustermann@example.com",
+    "phone": "+49 170 1234567",
+    "location": {
+      "en": "Munich, Germany",
+      "de": "München, Deutschland"
+    },
+    "linkedin": "linkedin.com/in/maxmustermann",
+    "github": "github.com/maxmustermann",
+    "website": "maxmustermann.dev",
+    "photo": "/api/uploads/de01cd27-c88c-4d62-94a4-e71d2fa9975b.jpg"
+  },
+  "summary": {
+    "en": "Experienced software engineer with 10+ years of expertise in building scalable web applications and leading cross-functional teams. Passionate about clean architecture, DevOps practices, and mentoring junior developers. Proven track record of delivering high-impact projects that drive business growth.",
+    "de": "Erfahrener Softwareentwickler mit über 10 Jahren Expertise im Aufbau skalierbarer Webanwendungen und der Leitung funktionsübergreifender Teams. Leidenschaftlich für saubere Architektur, DevOps-Praktiken und die Förderung von Nachwuchsentwicklern. Nachgewiesene Erfolgsbilanz bei der Bereitstellung wirkungsvoller Projekte, die das Geschäftswachstum vorantreiben."
+  },
+  "experience": [
+    {
+      "id": "exp-1",
+      "company": "TechCorp GmbH",
+      "role": {
+        "en": "Senior Software Engineer",
+        "de": "Senior Softwareentwickler"
+      },
+      "period": "2020 - Present",
+      "location": {
+        "en": "Munich, Germany",
+        "de": "München, Deutschland"
+      },
+      "achievements": [
+        {
+          "id": "ach-1",
+          "challenge": {
+            "en": "Legacy monolithic application causing frequent outages and 4-hour deployment cycles",
+            "de": "Veraltete monolithische Anwendung verursachte häufige Ausfälle und 4-stündige Deployment-Zyklen"
+          },
+          "action": {
+            "en": "Led migration to microservices architecture using Kubernetes, implemented CI/CD pipelines with automated testing",
+            "de": "Leitete die Migration zur Microservices-Architektur mit Kubernetes, implementierte CI/CD-Pipelines mit automatisierten Tests"
+          },
+          "result": {
+            "en": "Reduced deployment time by 95% (from 4 hours to 12 minutes), achieved 99.9% uptime, saving €200K annually in downtime costs",
+            "de": "Reduzierte die Deployment-Zeit um 95% (von 4 Stunden auf 12 Minuten), erreichte 99,9% Verfügbarkeit, Einsparung von 200.000€ jährlich an Ausfallkosten"
+          },
+          "eliteCategory": "transformation"
+        },
+        {
+          "id": "ach-2",
+          "challenge": {
+            "en": "Team of 5 junior developers lacking consistent coding standards and review processes",
+            "de": "Team von 5 Junior-Entwicklern ohne einheitliche Coding-Standards und Review-Prozesse"
+          },
+          "action": {
+            "en": "Established code review guidelines, introduced pair programming sessions, and created an internal knowledge base",
+            "de": "Etablierte Code-Review-Richtlinien, führte Pair-Programming-Sessions ein und erstellte eine interne Wissensdatenbank"
+          },
+          "result": {
+            "en": "Improved code quality metrics by 40%, reduced bug rate by 60%, and accelerated onboarding time from 3 months to 4 weeks",
+            "de": "Verbesserte Code-Qualitätsmetriken um 40%, reduzierte die Fehlerrate um 60% und beschleunigte die Einarbeitungszeit von 3 Monaten auf 4 Wochen"
+          },
+          "eliteCategory": "leadership"
+        }
+      ]
+    },
+    {
+      "id": "exp-2",
+      "company": "StartupHub AG",
+      "role": {
+        "en": "Full Stack Developer",
+        "de": "Full-Stack-Entwickler"
+      },
+      "period": "2017 - 2020",
+      "location": {
+        "en": "Berlin, Germany",
+        "de": "Berlin, Deutschland"
+      },
+      "achievements": [
+        {
+          "id": "ach-3",
+          "challenge": {
+            "en": "E-commerce platform handling only 100 concurrent users with frequent crashes during peak traffic",
+            "de": "E-Commerce-Plattform konnte nur 100 gleichzeitige Nutzer bedienen und stürzte bei Spitzenverkehr häufig ab"
+          },
+          "action": {
+            "en": "Redesigned the data layer with Redis caching, implemented database query optimization, and introduced auto-scaling on AWS",
+            "de": "Redesignte die Datenschicht mit Redis-Caching, optimierte Datenbankabfragen und führte Auto-Scaling auf AWS ein"
+          },
+          "result": {
+            "en": "Platform now supports 10,000+ concurrent users with sub-200ms response times, contributing to 150% revenue increase",
+            "de": "Plattform unterstützt jetzt über 10.000 gleichzeitige Nutzer mit Antwortzeiten unter 200ms, was zu einer Umsatzsteigerung von 150% beitrug"
+          },
+          "eliteCategory": "impact"
+        }
+      ]
+    },
+    {
+      "id": "0ccf443c-85c8-4895-9bce-bbf96cf3917b",
+      "company": "",
+      "role": {
+        "en": "",
+        "de": ""
+      },
+      "period": "",
+      "location": {
+        "en": "",
+        "de": ""
+      },
+      "achievements": [
+        {
+          "id": "82e2e2b6-8a06-4e8e-b5ee-3f123268c951",
+          "challenge": {
+            "en": "",
+            "de": ""
+          },
+          "action": {
+            "en": "",
+            "de": ""
+          },
+          "result": {
+            "en": "",
+            "de": ""
+          }
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "Technische Universität München",
+      "degree": {
+        "en": "M.Sc. Computer Science",
+        "de": "M.Sc. Informatik"
+      },
+      "period": "2013 - 2015",
+      "details": {
+        "en": "Focus on distributed systems and machine learning. Thesis: 'Scalable Event Processing in Cloud Environments'",
+        "de": "Schwerpunkt verteilte Systeme und maschinelles Lernen. Abschlussarbeit: 'Skalierbare Ereignisverarbeitung in Cloud-Umgebungen'"
+      }
+    },
+    {
+      "id": "edu-2",
+      "institution": "Ludwig-Maximilians-Universität München",
+      "degree": {
+        "en": "B.Sc. Computer Science",
+        "de": "B.Sc. Informatik"
+      },
+      "period": "2010 - 2013"
+    }
+  ],
+  "skills": [
+    {
+      "id": "skill-1",
+      "category": {
+        "en": "Programming Languages",
+        "de": "Programmiersprachen"
+      },
+      "items": [
+        "TypeScript",
+        "JavaScript",
+        "Python",
+        "Go",
+        "Java",
+        "C#"
+      ]
+    },
+    {
+      "id": "skill-2",
+      "category": {
+        "en": "Frameworks & Libraries",
+        "de": "Frameworks & Bibliotheken"
+      },
+      "items": [
+        "React",
+        "Node.js",
+        "Express",
+        "Next.js",
+        "FastAPI",
+        ".NET"
+      ]
+    },
+    {
+      "id": "skill-3",
+      "category": {
+        "en": "Cloud & DevOps",
+        "de": "Cloud & DevOps"
+      },
+      "items": [
+        "Azure",
+        "AWS",
+        "Kubernetes",
+        "Docker",
+        "Terraform",
+        "GitHub Actions"
+      ]
+    },
+    {
+      "id": "skill-4",
+      "category": {
+        "en": "Databases",
+        "de": "Datenbanken"
+      },
+      "items": [
+        "PostgreSQL",
+        "MongoDB",
+        "Redis",
+        "Azure Cosmos DB",
+        "Elasticsearch"
+      ]
+    }
+  ],
+  "certifications": [
+    {
+      "id": "cert-1",
+      "name": "Azure Solutions Architect Expert",
+      "issuer": "Microsoft",
+      "date": "2023"
+    },
+    {
+      "id": "cert-2",
+      "name": "Certified Kubernetes Administrator (CKA)",
+      "issuer": "CNCF",
+      "date": "2022"
+    }
+  ],
+  "languages": [
+    {
+      "id": "lang-1",
+      "language": {
+        "en": "German",
+        "de": "Deutsch"
+      },
+      "level": {
+        "en": "Native",
+        "de": "Muttersprache"
+      }
+    },
+    {
+      "id": "lang-2",
+      "language": {
+        "en": "English",
+        "de": "Englisch"
+      },
+      "level": {
+        "en": "Fluent (C2)",
+        "de": "Fließend (C2)"
+      }
+    },
+    {
+      "id": "lang-3",
+      "language": {
+        "en": "French",
+        "de": "Französisch"
+      },
+      "level": {
+        "en": "Intermediate (B1)",
+        "de": "Mittelstufe (B1)"
+      }
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "CloudDeploy CLI",
+      "description": {
+        "en": "Open-source CLI tool for simplified multi-cloud deployments with automatic infrastructure provisioning and rollback capabilities.",
+        "de": "Open-Source-CLI-Tool für vereinfachte Multi-Cloud-Deployments mit automatischer Infrastruktur-Provisionierung und Rollback-Fähigkeiten."
+      },
+      "technologies": [
+        "Go",
+        "Terraform",
+        "AWS",
+        "Azure",
+        "GCP"
+      ],
+      "link": "github.com/maxmustermann/clouddeploy"
+    },
+    {
+      "id": "proj-2",
+      "name": "RealtimeSync",
+      "description": {
+        "en": "Real-time data synchronization library for distributed applications, supporting conflict resolution and offline-first patterns.",
+        "de": "Echtzeit-Datensynchronisierungsbibliothek für verteilte Anwendungen mit Unterstützung für Konfliktlösung und Offline-First-Muster."
+      },
+      "technologies": [
+        "TypeScript",
+        "WebSocket",
+        "CRDTs",
+        "IndexedDB"
+      ],
+      "link": "github.com/maxmustermann/realtimesync"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "DataFlow Platform",
+      "description": {
+        "en": "Enterprise data pipeline orchestration platform processing 50M+ events daily across 200+ customers.",
+        "de": "Enterprise-Datenpipeline-Orchestrierungsplattform, die täglich über 50 Mio. Ereignisse für über 200 Kunden verarbeitet."
+      },
+      "role": {
+        "en": "Lead Architect & Core Developer",
+        "de": "Lead Architekt & Kernentwickler"
+      },
+      "highlights": [
+        {
+          "en": "Designed event-driven architecture handling 50M+ daily events",
+          "de": "Entwarf ereignisgesteuerte Architektur für über 50 Mio. tägliche Ereignisse"
+        },
+        {
+          "en": "Built self-service onboarding reducing customer setup from 2 weeks to 2 hours",
+          "de": "Entwickelte Self-Service-Onboarding, das die Kundeneinrichtung von 2 Wochen auf 2 Stunden reduzierte"
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "id": "ref-1",
+      "name": "Dr. Anna Schmidt",
+      "title": {
+        "en": "CTO at TechCorp GmbH",
+        "de": "CTO bei TechCorp GmbH"
+      },
+      "company": "TechCorp GmbH",
+      "contact": "Available upon request"
+    }
+  ]
+}
