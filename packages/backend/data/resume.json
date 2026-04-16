@@ -1,15 +1,15 @@
 {
   "personal": {
-    "name": "Max Mustermann",
+    "name": "Andreas Mirbach",
     "title": {
-      "en": "Senior Software Engineer",
-      "de": "Senior Softwareentwickler"
+      "en": "Cloud Solution Architect",
+      "de": "Cloud Solution Architekt"
     },
-    "email": "max.mustermann@example.com",
-    "phone": "+49 170 1234567",
+    "email": "andreas.mirbach@sovereigncyber.de",
+    "phone": "+4915679533110",
     "location": {
-      "en": "Munich, Germany",
-      "de": "München, Deutschland"
+      "en": "Europe",
+      "de": "Europe"
     },
     "linkedin": "linkedin.com/in/maxmustermann",
     "github": "github.com/maxmustermann",
@@ -250,17 +250,6 @@
       "level": {
         "en": "Fluent (C2)",
         "de": "Fließend (C2)"
-      }
-    },
-    {
-      "id": "lang-3",
-      "language": {
-        "en": "French",
-        "de": "Französisch"
-      },
-      "level": {
-        "en": "Intermediate (B1)",
-        "de": "Mittelstufe (B1)"
       }
     }
   ],

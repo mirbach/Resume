@@ -24,9 +24,21 @@ export default function Certifications({ data, theme }: Props) {
         {data.map((cert) => (
           <div key={cert.id} className="flex items-baseline justify-between">
             <div className="text-sm">
-              <span className="font-medium" style={{ color: theme.colors.heading }}>
-                {cert.name}
-              </span>
+              {cert.url ? (
+                <a
+                  href={cert.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium hover:underline"
+                  style={{ color: theme.colors.heading }}
+                >
+                  {cert.name}
+                </a>
+              ) : (
+                <span className="font-medium" style={{ color: theme.colors.heading }}>
+                  {cert.name}
+                </span>
+              )}
               <span style={{ color: theme.colors.secondary }}> — {cert.issuer}</span>
             </div>
             <span className="text-xs shrink-0" style={{ color: theme.colors.secondary }}>

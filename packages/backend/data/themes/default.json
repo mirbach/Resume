@@ -1,16 +1,16 @@
 {
-  "name": "Default",
+  "name": "default",
   "colors": {
     "primary": "#2563eb",
-    "secondary": "#64748b",
-    "accent": "#0891b2",
-    "text": "#1e293b",
+    "secondary": "#6b7280",
+    "accent": "#059669",
+    "text": "#1f2937",
     "background": "#ffffff",
-    "heading": "#0f172a"
+    "heading": "#111827"
   },
   "fonts": {
-    "heading": "Inter",
-    "body": "Inter",
+    "heading": "Helvetica",
+    "body": "Helvetica",
     "size": "medium"
   },
   "layout": {
@@ -20,12 +20,12 @@
       "personal",
       "summary",
       "experience",
-      "skills",
       "education",
-      "projects",
-      "products",
+      "skills",
       "certifications",
       "languages",
+      "projects",
+      "products",
       "references"
     ],
     "showPhoto": true,
@@ -35,5 +35,6 @@
       "bottom": 40,
       "left": 40
     }
-  }
+  },
+  "logo": "/api/uploads/b82c58b6-a9da-45c7-8864-b5d826c0e1c0.png"
 }

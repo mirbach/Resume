@@ -44,7 +44,7 @@ export default function LanguagesForm({ data, onChange }: Props) {
             <span className="text-sm font-medium text-gray-500">
               {entry.language.en || 'New Language'}
             </span>
-            <button onClick={() => removeEntry(index)} className="text-red-400 hover:text-red-600">
+            <button onClick={() => removeEntry(index)} aria-label="Remove language" className="text-red-400 hover:text-red-600">
               <Trash2 size={16} />
             </button>
           </div>

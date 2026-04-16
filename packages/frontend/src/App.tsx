@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ResumeData, ResumeTheme, Language } from './lib/types';
-import { getResume, saveResume, getTheme } from './lib/api';
+import { getResume, saveResume, getTheme, getThemes } from './lib/api';
 import { resolveResume } from './lib/resolve';
 import ResumeEditor from './components/editor/ResumeEditor';
 import ResumeLayout from './components/resume/ResumeLayout';
@@ -20,19 +20,37 @@ export default function App() {
   const [language, setLanguage] = useState<Language>('en');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showThemeEditor, setShowThemeEditor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Load initial data
+  // Load initial data — fall back to first available theme if 'default' is missing
   useEffect(() => {
-    Promise.all([getResume(), getTheme('default')])
-      .then(([resume, themeData]) => {
+    async function init() {
+      try {
+        const resume = await getResume();
         setResumeData(resume);
+
+        let themeData: ResumeTheme | null = null;
+        try {
+          themeData = await getTheme('default');
+          setThemeName('default');
+        } catch {
+          // default theme missing — load first available
+          const list = await getThemes();
+          if (list.length === 0) throw new Error('No themes found. Please restart the server.');
+          themeData = await getTheme(list[0].filename);
+          setThemeName(list[0].filename);
+        }
         setTheme(themeData);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'Failed to load app data');
+      } finally {
+        setLoading(false);
+      }
+    }
+    init();
   }, []);
 
   // Load theme when selection changes
@@ -66,7 +84,20 @@ export default function App() {
   if (loading || !resumeData || !theme) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-100">
-        <Loader2 className="animate-spin text-blue-600" size={32} />
+        {loadError ? (
+          <div className="text-center">
+            <AlertCircle className="mx-auto mb-3 text-red-500" size={32} />
+            <p className="text-red-600 font-medium">{loadError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <Loader2 className="animate-spin text-blue-600" size={32} />
+        )}
       </div>
     );
   }
@@ -158,6 +189,8 @@ export default function App() {
           currentTheme={themeName}
           onThemeChange={(name) => {
             setThemeName(name);
+            // Always re-fetch theme data so edits to the current theme are reflected
+            getTheme(name).then(setTheme).catch(console.error);
             setShowThemeEditor(false);
           }}
           onClose={() => setShowThemeEditor(false)}

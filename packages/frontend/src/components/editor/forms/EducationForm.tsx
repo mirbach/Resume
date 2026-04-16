@@ -52,7 +52,7 @@ export default function EducationForm({ data, onChange }: Props) {
             <span className="text-sm font-medium text-gray-500">
               {entry.institution || 'New Entry'}
             </span>
-            <button onClick={() => removeEntry(index)} className="text-red-400 hover:text-red-600">
+            <button onClick={() => removeEntry(index)} aria-label="Remove entry" className="text-red-400 hover:text-red-600">
               <Trash2 size={16} />
             </button>
           </div>

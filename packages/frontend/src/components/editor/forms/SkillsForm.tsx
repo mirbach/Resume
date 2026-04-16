@@ -64,6 +64,7 @@ export default function SkillsForm({ data, onChange }: Props) {
             </span>
             <button
               onClick={() => removeCategory(catIndex)}
+              aria-label="Remove category"
               className="text-red-400 hover:text-red-600"
             >
               <Trash2 size={16} />
@@ -88,6 +89,7 @@ export default function SkillsForm({ data, onChange }: Props) {
                   {item}
                   <button
                     onClick={() => removeSkill(catIndex, skillIndex)}
+                    aria-label="Remove skill"
                     className="text-blue-400 hover:text-blue-600"
                   >
                     <X size={12} />

@@ -15,6 +15,16 @@ const ALL_SECTIONS: ResumeSection[] = [
   'certifications', 'languages', 'projects', 'products', 'references',
 ];
 
+// Fonts that work both in the HTML preview and in the PDF renderer.
+// PDF built-ins (Helvetica, Courier, Times-Roman) need no CDN fetch.
+// Inter is pre-registered in ResumePdfDocument from jsDelivr.
+const AVAILABLE_FONTS = [
+  { value: 'Inter',        label: 'Inter' },
+  { value: 'Helvetica',    label: 'Helvetica' },
+  { value: 'Times-Roman',  label: 'Times New Roman' },
+  { value: 'Courier',      label: 'Courier' },
+];
+
 const DEFAULT_THEME: ResumeTheme = {
   name: '',
   colors: {
@@ -119,7 +129,9 @@ export default function ThemeEditor({ currentTheme, onThemeChange, onClose }: Pr
       await createTheme(newTheme);
       const list = await getThemes();
       setThemes(list);
-      setSelectedTheme(newName.trim());
+      // Find the new theme's filename (server derives it from the name)
+      const created = list.find((t) => t.name === newName.trim());
+      setSelectedTheme(created ? created.filename : newName.trim().toLowerCase().replace(/\s+/g, '-'));
       setShowCreate(false);
       setNewName('');
     } catch (e) {
@@ -141,13 +153,13 @@ export default function ThemeEditor({ currentTheme, onThemeChange, onClose }: Pr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b px-6 py-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between border-b px-6 py-4 flex-shrink-0">
           <h2 className="text-lg font-bold">Theme Editor</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Theme selector */}
           <div className="flex items-center gap-3">
             <select
@@ -156,7 +168,7 @@ export default function ThemeEditor({ currentTheme, onThemeChange, onClose }: Pr
               className={inputClasses + ' max-w-xs'}
             >
               {themes.map((t) => (
-                <option key={t.name} value={t.name}>{t.name}</option>
+                <option key={t.filename} value={t.filename}>{t.name}</option>
               ))}
             </select>
             <button onClick={() => setShowCreate(true)} className="text-blue-600 hover:text-blue-700">
@@ -267,11 +279,15 @@ export default function ThemeEditor({ currentTheme, onThemeChange, onClose }: Pr
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs text-gray-500">Heading</label>
-                <input className={inputClasses} value={theme.fonts.heading} onChange={(e) => updateFonts({ heading: e.target.value })} />
+                <select className={inputClasses} value={theme.fonts.heading} onChange={(e) => updateFonts({ heading: e.target.value })}>
+                  {AVAILABLE_FONTS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </select>
               </div>
               <div>
                 <label className="block text-xs text-gray-500">Body</label>
-                <input className={inputClasses} value={theme.fonts.body} onChange={(e) => updateFonts({ body: e.target.value })} />
+                <select className={inputClasses} value={theme.fonts.body} onChange={(e) => updateFonts({ body: e.target.value })}>
+                  {AVAILABLE_FONTS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </select>
               </div>
               <div>
                 <label className="block text-xs text-gray-500">Size</label>
@@ -353,17 +369,18 @@ export default function ThemeEditor({ currentTheme, onThemeChange, onClose }: Pr
             </div>
           </fieldset>
 
-          {/* Save */}
-          <div className="flex justify-end border-t pt-4">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-            >
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              Save Theme
-            </button>
-          </div>
+        </div>
+
+        {/* Save — always visible footer */}
+        <div className="flex flex-shrink-0 justify-end border-t px-6 py-4">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            Save Theme
+          </button>
         </div>
       </div>
     </div>

@@ -4,20 +4,32 @@ import {
   Text,
   View,
   Image,
+  Link,
   StyleSheet,
   Font,
 } from '@react-pdf/renderer';
 import type { ResolvedResume, ResumeTheme, ResumeSection, EliteCategory } from '../../lib/types';
 
-// Register default font
-Font.register({
-  family: 'Inter',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fAZ9hiJ-Ek-_EeA.woff2', fontWeight: 600 },
-    { src: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hiJ-Ek-_EeA.woff2', fontWeight: 700 },
-  ],
-});
+// pdfkit only supports TTF/OTF — woff/woff2 cause DataView errors.
+// Map any font name to the nearest built-in PDF font so export always works.
+Font.registerHyphenationCallback((word) => [word]);
+
+function pdfFont(name: string): string {
+  switch (name) {
+    case 'Times-Roman': return 'Times-Roman';
+    case 'Courier':     return 'Courier';
+    case 'Helvetica':   return 'Helvetica';
+    default:            return 'Helvetica'; // Inter and anything else → Helvetica
+  }
+}
+
+function pdfFontBold(name: string): string {
+  switch (name) {
+    case 'Times-Roman': return 'Times-Bold';
+    case 'Courier':     return 'Courier-Bold';
+    default:            return 'Helvetica-Bold';
+  }
+}
 
 const ELITE_LABELS: Record<EliteCategory, string> = {
   experience: 'E',
@@ -45,13 +57,16 @@ const ELITE_COLOR: Record<EliteCategory, string> = {
 
 function createStyles(theme: ResumeTheme) {
   const m = theme.layout.pageMargins;
+  const bodyFont = pdfFont(theme.fonts.body);
+  const headingFont = pdfFont(theme.fonts.heading);
+  const headingFontBold = pdfFontBold(theme.fonts.heading);
   return StyleSheet.create({
     page: {
       paddingTop: m.top,
       paddingRight: m.right,
       paddingBottom: m.bottom,
       paddingLeft: m.left,
-      fontFamily: 'Inter',
+      fontFamily: bodyFont,
       fontSize: theme.fonts.size === 'small' ? 9 : theme.fonts.size === 'large' ? 11 : 10,
       color: theme.colors.text,
       backgroundColor: theme.colors.background,
@@ -61,14 +76,15 @@ function createStyles(theme: ResumeTheme) {
     headerLeft: { flex: 1 },
     headerRight: { alignItems: 'flex-end', marginLeft: 16, maxWidth: 120 },
     companyLogo: { width: 'auto', height: 36, objectFit: 'contain', marginBottom: 3 },
-    companyName: { fontSize: 8, fontWeight: 600, color: theme.colors.secondary, textAlign: 'right' },
-    name: { fontSize: 22, fontWeight: 700, color: theme.colors.heading },
+    companyName: { fontSize: 8, fontFamily: headingFontBold, color: theme.colors.secondary, textAlign: 'right' },
+    photo: { width: 64, height: 64, borderRadius: 32, objectFit: 'cover', marginRight: 14, borderWidth: 2, borderColor: theme.colors.primary },
+    name: { fontSize: 22, fontFamily: headingFontBold, color: theme.colors.heading },
     title: { fontSize: 14, marginTop: 2, color: theme.colors.primary },
     contactRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 6, gap: 10 },
     contactItem: { fontSize: 8, color: theme.colors.secondary },
     sectionTitle: {
       fontSize: 12,
-      fontWeight: 700,
+      fontFamily: headingFontBold,
       color: theme.colors.heading,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.primary,
@@ -77,35 +93,35 @@ function createStyles(theme: ResumeTheme) {
       marginTop: 8,
     },
     entryHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
-    entryTitle: { fontSize: 10, fontWeight: 600, color: theme.colors.heading },
+    entryTitle: { fontSize: 10, fontFamily: headingFontBold, color: theme.colors.heading },
     entrySubtitle: { fontSize: 9, color: theme.colors.primary },
     entryPeriod: { fontSize: 9, color: theme.colors.secondary },
     entryDetails: { fontSize: 8, color: theme.colors.secondary, marginTop: 1 },
     bodyText: { fontSize: 9, lineHeight: 1.5 },
     achievement: { marginBottom: 4 },
-    achLabel: { fontSize: 8, fontWeight: 600, color: theme.colors.accent },
+    achLabel: { fontSize: 8, fontFamily: headingFontBold, color: theme.colors.accent },
     achText: { fontSize: 9 },
     eliteBadge: {
       width: 12, height: 12, borderRadius: 6,
-      fontSize: 7, fontWeight: 700, textAlign: 'center',
+      fontSize: 7, textAlign: 'center',
       marginRight: 4, marginTop: 1,
     },
     skillCategory: { marginBottom: 4 },
-    skillCatName: { fontSize: 9, fontWeight: 600, color: theme.colors.heading, marginBottom: 2 },
+    skillCatName: { fontSize: 9, fontFamily: headingFontBold, color: theme.colors.heading, marginBottom: 2 },
     skillTag: {
       fontSize: 8, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 8,
       backgroundColor: theme.colors.primary + '20', color: theme.colors.primary, marginRight: 4, marginBottom: 2,
     },
     tagRow: { flexDirection: 'row', flexWrap: 'wrap' },
     certRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
-    certName: { fontSize: 9, fontWeight: 600, color: theme.colors.heading },
+    certName: { fontSize: 9, fontFamily: headingFontBold, color: theme.colors.heading },
     certIssuer: { fontSize: 9, color: theme.colors.secondary },
     certDate: { fontSize: 8, color: theme.colors.secondary },
     langRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
     langItem: { fontSize: 9 },
-    langName: { fontWeight: 600, color: theme.colors.heading },
+    langName: { fontFamily: headingFontBold, color: theme.colors.heading },
     langLevel: { color: theme.colors.secondary },
-    projName: { fontSize: 10, fontWeight: 600, color: theme.colors.heading },
+    projName: { fontSize: 10, fontFamily: headingFontBold, color: theme.colors.heading },
     projLink: { fontSize: 8, color: theme.colors.accent },
     projDesc: { fontSize: 9, marginTop: 1 },
     techTag: {
@@ -113,13 +129,13 @@ function createStyles(theme: ResumeTheme) {
       backgroundColor: theme.colors.accent + '15', color: theme.colors.accent,
       marginRight: 3, marginBottom: 2,
     },
-    prodName: { fontSize: 10, fontWeight: 600, color: theme.colors.heading },
+    prodName: { fontSize: 10, fontFamily: headingFontBold, color: theme.colors.heading },
     prodDesc: { fontSize: 9, marginTop: 1 },
     prodRole: { fontSize: 8, color: theme.colors.secondary, marginTop: 1 },
     highlight: { fontSize: 9, marginLeft: 8 },
     refGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
     refItem: { width: '45%' },
-    refName: { fontSize: 9, fontWeight: 600, color: theme.colors.heading },
+    refName: { fontSize: 9, fontFamily: headingFontBold, color: theme.colors.heading },
     refTitle: { fontSize: 8, color: theme.colors.secondary },
     refContact: { fontSize: 8, color: theme.colors.accent, marginTop: 1 },
   });
@@ -131,9 +147,19 @@ interface Props {
 }
 
 function SectionPersonal({ resume, styles, theme }: { resume: ResolvedResume; styles: ReturnType<typeof createStyles>; theme: ResumeTheme }) {
+  // react-pdf Image requires an absolute URL; relative paths won't resolve inside the renderer
+  const toAbsolute = (path: string) =>
+    path.startsWith('http') || path.startsWith('data:') ? path : `${window.location.origin}${path}`;
+
+  const logoSrc = theme.logo ? toAbsolute(theme.logo) : undefined;
+  const photoSrc = theme.layout.showPhoto && resume.personal.photo
+    ? toAbsolute(resume.personal.photo)
+    : undefined;
+
   return (
     <View style={styles.header}>
       <View style={styles.headerInner}>
+        {photoSrc && <Image src={photoSrc} style={styles.photo} />}
         <View style={styles.headerLeft}>
           <Text style={styles.name}>{resume.personal.name}</Text>
           <Text style={styles.title}>{resume.personal.title}</Text>
@@ -146,10 +172,10 @@ function SectionPersonal({ resume, styles, theme }: { resume: ResolvedResume; st
             {resume.personal.website && <Text style={styles.contactItem}>{resume.personal.website}</Text>}
           </View>
         </View>
-        {(theme.logo || theme.companyName) && (
+        {(logoSrc || theme.companyName) && (
           <View style={styles.headerRight}>
-            {theme.logo && (
-              <Image src={theme.logo} style={styles.companyLogo} />
+            {logoSrc && (
+              <Image src={logoSrc} style={styles.companyLogo} />
             )}
             {theme.companyName && (
               <Text style={styles.companyName}>{theme.companyName}</Text>
@@ -261,7 +287,11 @@ function SectionCertifications({ resume, styles }: { resume: ResolvedResume; sty
       {resume.certifications.map((cert) => (
         <View key={cert.id} style={styles.certRow}>
           <Text>
-            <Text style={styles.certName}>{cert.name}</Text>
+            {cert.url ? (
+              <Link src={cert.url} style={styles.certName}>{cert.name}</Link>
+            ) : (
+              <Text style={styles.certName}>{cert.name}</Text>
+            )}
             <Text style={styles.certIssuer}> — {cert.issuer}</Text>
           </Text>
           <Text style={styles.certDate}>{cert.date}</Text>

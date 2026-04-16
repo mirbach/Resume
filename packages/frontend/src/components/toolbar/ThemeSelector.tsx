@@ -24,7 +24,7 @@ export default function ThemeSelector({ value, onChange }: Props) {
         className="rounded-md border border-gray-300 px-2 py-1.5 text-sm bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
       >
         {themes.map((t) => (
-          <option key={t.name} value={t.name}>
+          <option key={t.filename} value={t.filename}>
             {t.name}
           </option>
         ))}

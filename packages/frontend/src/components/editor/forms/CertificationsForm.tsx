@@ -12,7 +12,7 @@ export default function CertificationsForm({ data, onChange }: Props) {
     'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none';
 
   function addEntry() {
-    onChange([...data, { id: uuidv4(), name: '', issuer: '', date: '' }]);
+    onChange([...data, { id: uuidv4(), name: '', issuer: '', date: '', url: '' }]);
   }
 
   function updateEntry(index: number, entry: CertificationEntry) {
@@ -41,7 +41,7 @@ export default function CertificationsForm({ data, onChange }: Props) {
         <div key={entry.id} className="rounded-lg border border-gray-200 bg-white p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-500">{entry.name || 'New Entry'}</span>
-            <button onClick={() => removeEntry(index)} className="text-red-400 hover:text-red-600">
+            <button onClick={() => removeEntry(index)} aria-label="Remove certification" className="text-red-400 hover:text-red-600">
               <Trash2 size={16} />
             </button>
           </div>
@@ -76,6 +76,16 @@ export default function CertificationsForm({ data, onChange }: Props) {
                 placeholder="2023"
               />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Credential URL</label>
+            <input
+              type="url"
+              className={inputClasses}
+              value={entry.url ?? ''}
+              onChange={(e) => updateEntry(index, { ...entry, url: e.target.value })}
+              placeholder="https://learn.microsoft.com/credentials/..."
+            />
           </div>
         </div>
       ))}

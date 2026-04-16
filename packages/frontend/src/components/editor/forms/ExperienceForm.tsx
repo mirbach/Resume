@@ -229,6 +229,7 @@ export default function ExperienceForm({ data, onChange }: Props) {
                         </span>
                         {/* ELITE category selector */}
                         <select
+                          aria-label="ELITE category"
                           className="rounded border border-gray-300 px-2 py-0.5 text-xs"
                           value={ach.eliteCategory || ''}
                           onChange={(e) =>
@@ -258,6 +259,7 @@ export default function ExperienceForm({ data, onChange }: Props) {
                       </div>
                       <button
                         onClick={() => removeAchievement(entryIndex, achIndex)}
+                        aria-label="Remove achievement"
                         className="text-red-400 hover:text-red-600"
                       >
                         <Trash2 size={14} />

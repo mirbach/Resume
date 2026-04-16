@@ -35,6 +35,7 @@ export default function PersonalInfoForm({ data, onChange }: Props) {
               />
               <button
                 onClick={() => onChange({ ...data, photo: undefined })}
+                aria-label="Remove photo"
                 className="absolute -top-1 -right-1 rounded-full bg-red-500 text-white p-0.5 hover:bg-red-600"
               >
                 <X size={14} />
