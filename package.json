@@ -9,9 +9,14 @@
     "dev": "concurrently \"npm run dev -w packages/backend\" \"npm run dev -w packages/frontend\"",
     "build": "npm run build -w packages/backend && npm run build -w packages/frontend",
     "dev:backend": "npm run dev -w packages/backend",
-    "dev:frontend": "npm run dev -w packages/frontend"
+    "dev:frontend": "npm run dev -w packages/frontend",
+    "cf:dev": "npm run build -w packages/frontend && wrangler pages dev packages/frontend/dist",
+    "cf:deploy": "npm run build -w packages/frontend && wrangler pages deploy packages/frontend/dist",
+    "kv:create": "wrangler kv namespace create RESUME_KV && wrangler kv namespace create RESUME_KV --preview"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0"
+    "@cloudflare/workers-types": "^4.20260416.2",
+    "concurrently": "^9.1.0",
+    "wrangler": "^4.83.0"
   }
 }
