@@ -8,9 +8,17 @@ import type {
 
 const API_BASE = '/api';
 
+let _authToken: string | null = null;
+
+export function setAuthToken(token: string | null) {
+  _authToken = token;
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (_authToken) headers['Authorization'] = `Bearer ${_authToken}`;
   const res = await fetch(`${API_BASE}${url}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
   });
   const json = (await res.json()) as ApiResponse<T>;

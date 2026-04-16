@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { ResumeData, ResumeTheme, Language } from './lib/types';
-import { getResume, saveResume, getTheme, getThemes } from './lib/api';
+import type { ResumeData, ResumeTheme, AppSettings, Language } from './lib/types';
+import { getResume, saveResume, getTheme, getThemes, getSettings, setAuthToken } from './lib/api';
+import { buildAuthUrl, exchangeCodeForToken, getStoredToken, storeToken, validateOAuthState } from './lib/auth';
 import { resolveResume } from './lib/resolve';
 import ResumeEditor from './components/editor/ResumeEditor';
 import ResumeLayout from './components/resume/ResumeLayout';
@@ -9,9 +10,10 @@ import ThemeSelector from './components/toolbar/ThemeSelector';
 import ThemeEditor from './components/editor/theme/ThemeEditor';
 import PdfExportButton from './components/pdf/PdfExportButton';
 import SettingsPage from './components/SettingsPage';
-import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, Moon, Sun } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, Moon, Sun, Pencil, ArrowLeft, X } from 'lucide-react';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+type AppMode = 'preview' | 'editor';
 
 export default function App() {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
@@ -24,21 +26,32 @@ export default function App() {
   const [showThemeEditor, setShowThemeEditor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [mode, setMode] = useState<AppMode>('preview');
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Load initial data — fall back to first available theme if 'default' is missing
+  // Load initial data
   useEffect(() => {
     async function init() {
       try {
-        const resume = await getResume();
+        const [resume, settings] = await Promise.all([
+          getResume(),
+          getSettings().catch(() => null),
+        ]);
         setResumeData(resume);
+        setAppSettings(settings);
+
+        // Restore stored token
+        const token = getStoredToken();
+        if (token) setAuthToken(token);
 
         let themeData: ResumeTheme | null = null;
         try {
           themeData = await getTheme('default');
           setThemeName('default');
         } catch {
-          // default theme missing — load first available
           const list = await getThemes();
           if (list.length === 0) throw new Error('No themes found. Please restart the server.');
           themeData = await getTheme(list[0].filename);
@@ -54,34 +67,88 @@ export default function App() {
     init();
   }, []);
 
+  // Handle OAuth callback (?code=... in URL after IDP redirect)
+  useEffect(() => {
+    if (!appSettings?.auth.enabled) return;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (!code) return;
+
+    const returnedState = params.get('state');
+    if (!validateOAuthState(returnedState)) {
+      setAuthError('Authentication failed: invalid state parameter');
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
+    setAuthLoading(true);
+    exchangeCodeForToken(code, appSettings.auth)
+      .then((token) => {
+        storeToken(token);
+        setAuthToken(token);
+        window.history.replaceState({}, '', window.location.pathname);
+        setMode('editor');
+      })
+      .catch((err) => {
+        setAuthError(err instanceof Error ? err.message : 'Authentication failed');
+        window.history.replaceState({}, '', window.location.pathname);
+      })
+      .finally(() => setAuthLoading(false));
+  }, [appSettings]);
+
   // Load theme when selection changes
   useEffect(() => {
-    getTheme(themeName)
-      .then(setTheme)
-      .catch(console.error);
+    getTheme(themeName).then(setTheme).catch(console.error);
   }, [themeName]);
 
   // Auto-save with debounce
-  const handleResumeChange = useCallback(
-    (data: ResumeData) => {
-      setResumeData(data);
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => {
-        setSaveStatus('saving');
-        saveResume(data)
-          .then(() => {
-            setSaveStatus('saved');
-            setTimeout(() => setSaveStatus('idle'), 2000);
-          })
-          .catch(() => {
-            setSaveStatus('error');
-            setTimeout(() => setSaveStatus('idle'), 3000);
-          });
-      }, 1000);
-    },
-    []
-  );
+  const handleResumeChange = useCallback((data: ResumeData) => {
+    setResumeData(data);
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      setSaveStatus('saving');
+      saveResume(data)
+        .then(() => {
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 2000);
+        })
+        .catch(() => {
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus('idle'), 3000);
+        });
+    }, 1000);
+  }, []);
 
+  async function handleEditClick() {
+    if (!appSettings?.auth.enabled) {
+      setMode('editor');
+      return;
+    }
+    // Already have a token
+    const token = getStoredToken();
+    if (token) {
+      setAuthToken(token);
+      setMode('editor');
+      return;
+    }
+    // Redirect to IDP
+    try {
+      setAuthLoading(true);
+      const url = await buildAuthUrl(appSettings.auth);
+      window.location.href = url;
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Failed to initiate authentication');
+      setAuthLoading(false);
+    }
+  }
+
+  function toggleDarkMode() {
+    const next = !darkMode;
+    setDarkMode(next);
+    localStorage.setItem('darkMode', String(next));
+  }
+
+  // ---- Render: loading / error ----
   if (loading || !resumeData || !theme) {
     return (
       <div className={`flex h-screen items-center justify-center bg-gray-100 dark:bg-gray-900${darkMode ? ' dark' : ''}`}>
@@ -104,17 +171,78 @@ export default function App() {
   }
 
   const resolved = resolveResume(resumeData, language);
+  const darkClass = darkMode ? ' dark' : '';
 
+  // ---- Render: preview mode ----
+  if (mode === 'preview') {
+    return (
+      <div className={`flex h-screen flex-col bg-gray-200 dark:bg-gray-700${darkClass}`}>
+        {/* Minimal top bar */}
+        <header className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 shadow-sm flex-shrink-0">
+          <span className="text-base font-semibold text-gray-900 dark:text-white">
+            {resolved.personal.name || 'Resume'}
+          </span>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher language={language} onChange={setLanguage} />
+            <PdfExportButton resume={resolved} theme={theme} language={language} />
+            <button
+              aria-label="Toggle dark mode"
+              onClick={toggleDarkMode}
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            >
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <button
+              aria-label="Edit resume"
+              onClick={handleEditClick}
+              disabled={authLoading}
+              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+            >
+              {authLoading
+                ? <Loader2 size={14} className="animate-spin" />
+                : <Pencil size={14} />}
+              Edit
+            </button>
+          </div>
+        </header>
+
+        {/* Auth error banner */}
+        {authError && (
+          <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 border-b border-red-200 dark:border-red-800 px-4 py-2 text-sm text-red-700 dark:text-red-300 flex-shrink-0">
+            <AlertCircle size={14} />
+            <span>{authError}</span>
+            <button aria-label="Dismiss" onClick={() => setAuthError(null)} className="ml-auto">
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Full-page resume preview */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <ResumeLayout resume={resolved} theme={theme} />
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Render: editor mode ----
   return (
-    <div className={`flex h-screen flex-col bg-gray-100 dark:bg-gray-900${darkMode ? ' dark' : ''}`}>
-      {/* Toolbar */}
+    <div className={`flex h-screen flex-col bg-gray-100 dark:bg-gray-900${darkClass}`}>
+      {/* Editor toolbar */}
       <header className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 shadow-sm">
-        <h1 className="text-lg font-bold text-gray-900 dark:text-white">Resume Builder</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            aria-label="Back to preview"
+            onClick={() => setMode('preview')}
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="text-base font-bold text-gray-900 dark:text-white">Resume Builder</h1>
           <div className="flex items-center gap-2 text-sm">
             {saveStatus === 'saving' && (
-              <span className="flex items-center gap-1 text-gray-500">
-                <Loader2 size={14} className="animate-spin" /> Saving...
+              <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                <Loader2 size={14} className="animate-spin" /> Saving…
               </span>
             )}
             {saveStatus === 'saved' && (
@@ -132,14 +260,8 @@ export default function App() {
                 onClick={() => {
                   setSaveStatus('saving');
                   saveResume(resumeData)
-                    .then(() => {
-                      setSaveStatus('saved');
-                      setTimeout(() => setSaveStatus('idle'), 2000);
-                    })
-                    .catch(() => {
-                      setSaveStatus('error');
-                      setTimeout(() => setSaveStatus('idle'), 3000);
-                    });
+                    .then(() => { setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000); })
+                    .catch(() => { setSaveStatus('error'); setTimeout(() => setSaveStatus('idle'), 3000); });
                 }}
                 className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
@@ -147,6 +269,8 @@ export default function App() {
               </button>
             )}
           </div>
+        </div>
+        <div className="flex items-center gap-3">
           <ThemeSelector value={themeName} onChange={setThemeName} />
           <button
             onClick={() => setShowThemeEditor(true)}
@@ -155,22 +279,17 @@ export default function App() {
             <Palette size={14} /> Edit Theme
           </button>
           <LanguageSwitcher language={language} onChange={setLanguage} />
-          <PdfExportButton resume={resolved} theme={theme} language={language} />
           <button
             aria-label="Toggle dark mode"
-            onClick={() => {
-              const next = !darkMode;
-              setDarkMode(next);
-              localStorage.setItem('darkMode', String(next));
-            }}
-            className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            onClick={toggleDarkMode}
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button
             onClick={() => setShowSettings(true)}
             aria-label="Settings"
-            className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
             <Settings size={16} />
           </button>
@@ -182,34 +301,29 @@ export default function App() {
           <SettingsPage onClose={() => setShowSettings(false)} />
         </div>
       ) : (
-      <>
-      {/* Split pane */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Editor */}
-        <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 overflow-hidden">
-          <ResumeEditor data={resumeData} onChange={handleResumeChange} />
-        </div>
+        <>
+          {/* Split pane */}
+          <div className="flex flex-1 overflow-hidden">
+            <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 overflow-hidden">
+              <ResumeEditor data={resumeData} onChange={handleResumeChange} />
+            </div>
+            <div className="w-1/2 overflow-y-auto p-6 bg-gray-200 dark:bg-gray-700">
+              <ResumeLayout resume={resolved} theme={theme} />
+            </div>
+          </div>
 
-        {/* Preview */}
-        <div className="w-1/2 overflow-y-auto p-6 bg-gray-200 dark:bg-gray-700">
-          <ResumeLayout resume={resolved} theme={theme} />
-        </div>
-      </div>
-
-      {/* Theme Editor Modal */}
-      {showThemeEditor && (
-        <ThemeEditor
-          currentTheme={themeName}
-          onThemeChange={(name) => {
-            setThemeName(name);
-            // Always re-fetch theme data so edits to the current theme are reflected
-            getTheme(name).then(setTheme).catch(console.error);
-            setShowThemeEditor(false);
-          }}
-          onClose={() => setShowThemeEditor(false)}
-        />
-      )}
-      </>
+          {showThemeEditor && (
+            <ThemeEditor
+              currentTheme={themeName}
+              onThemeChange={(name) => {
+                setThemeName(name);
+                getTheme(name).then(setTheme).catch(console.error);
+                setShowThemeEditor(false);
+              }}
+              onClose={() => setShowThemeEditor(false)}
+            />
+          )}
+        </>
       )}
     </div>
   );

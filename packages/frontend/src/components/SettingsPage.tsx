@@ -57,14 +57,14 @@ export default function SettingsPage({ onClose }: Props) {
   return (
     <div className="mx-auto max-w-2xl p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+        <button aria-label="Back" onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
           <ArrowLeft size={20} />
         </button>
-        <h2 className="text-xl font-bold text-gray-900">Settings</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h2>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Authentication (OIDC)</h3>
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Authentication (OIDC)</h3>
 
         <label className="flex items-center gap-3">
           <input
@@ -73,14 +73,15 @@ export default function SettingsPage({ onClose }: Props) {
             onChange={(e) => updateAuth({ enabled: e.target.checked })}
             className="rounded"
           />
-          <span className="text-sm font-medium text-gray-700">Enable authentication</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable authentication</span>
         </label>
 
         {auth.enabled && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Provider</label>
+              <label htmlFor="auth-provider" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Provider</label>
               <select
+                id="auth-provider"
                 className={inputClasses}
                 value={auth.provider}
                 onChange={(e) => updateAuth({ provider: e.target.value as AuthProvider })}
@@ -91,7 +92,7 @@ export default function SettingsPage({ onClose }: Props) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Client ID</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client ID</label>
               <input
                 className={inputClasses}
                 value={auth.clientId}
@@ -100,7 +101,7 @@ export default function SettingsPage({ onClose }: Props) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Authority URL</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Authority URL</label>
               <input
                 className={inputClasses}
                 value={auth.authority}
@@ -109,7 +110,7 @@ export default function SettingsPage({ onClose }: Props) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Redirect URI</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Redirect URI</label>
               <input
                 className={inputClasses}
                 value={auth.redirectUri}
@@ -118,7 +119,7 @@ export default function SettingsPage({ onClose }: Props) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Scopes (comma-separated)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scopes (comma-separated)</label>
               <input
                 className={inputClasses}
                 value={auth.scopes.join(', ')}
