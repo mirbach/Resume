@@ -42,25 +42,160 @@ interface AppSettings {
   auth: AuthSettings;
 }
 
+// ---- JWT / JWKS verification (Web Crypto API — Cloudflare Workers compatible) ----
+
+interface JwkKey {
+  kty: string;
+  kid?: string;
+  use?: string;
+  alg?: string;
+  // RSA fields
+  n?: string;
+  e?: string;
+  // EC fields
+  crv?: string;
+  x?: string;
+  y?: string;
+}
+
+interface OidcConfig {
+  jwks_uri: string;
+}
+
+interface JwtHeader {
+  alg: string;
+  kid?: string;
+}
+
+interface JwtClaims {
+  iss?: string;
+  aud?: string | string[];
+  exp?: number;
+}
+
+function base64UrlDecodeToBuffer(str: string): ArrayBuffer {
+  // Pad to a multiple of 4, then decode
+  const padded = str.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = (4 - (padded.length % 4)) % 4;
+  const binary = atob(padded + '='.repeat(pad));
+  const buf = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) buf[i] = binary.charCodeAt(i);
+  return buf.buffer;
+}
+
+function jsonDecode(b64url: string): unknown {
+  return JSON.parse(new TextDecoder().decode(base64UrlDecodeToBuffer(b64url)));
+}
+
+async function importSigningKey(key: JwkKey, alg: string): Promise<CryptoKey> {
+  if (alg === 'RS256' || alg === 'RS384' || alg === 'RS512') {
+    const hash = alg === 'RS256' ? 'SHA-256' : alg === 'RS384' ? 'SHA-384' : 'SHA-512';
+    return crypto.subtle.importKey('jwk', key as JsonWebKey, { name: 'RSASSA-PKCS1-v1_5', hash }, false, ['verify']);
+  }
+  if (alg === 'ES256') {
+    return crypto.subtle.importKey('jwk', key as JsonWebKey, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+  }
+  if (alg === 'ES384') {
+    return crypto.subtle.importKey('jwk', key as JsonWebKey, { name: 'ECDSA', namedCurve: 'P-384' }, false, ['verify']);
+  }
+  throw new Error(`Unsupported JWT algorithm: ${alg}`);
+}
+
+async function verifyJwt(token: string, authority: string, clientId: string): Promise<boolean> {
+  const parts = token.split('.');
+  if (parts.length !== 3) return false;
+
+  let header: JwtHeader;
+  let claims: JwtClaims;
+  try {
+    header = jsonDecode(parts[0]) as JwtHeader;
+    claims = jsonDecode(parts[1]) as JwtClaims;
+  } catch {
+    return false;
+  }
+
+  // Expiry check
+  const now = Math.floor(Date.now() / 1000);
+  if (claims.exp !== undefined && claims.exp < now) return false;
+
+  // Issuer check
+  if (claims.iss && claims.iss !== authority.replace(/\/$/, '')) return false;
+
+  // Audience check — access tokens may omit aud; we verify when present
+  if (claims.aud !== undefined) {
+    const aud = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
+    if (!aud.includes(clientId)) return false;
+  }
+
+  // Fetch JWKS via discovery
+  const base = authority.replace(/\/$/, '');
+  const discoveryRes = await fetch(`${base}/.well-known/openid-configuration`);
+  if (!discoveryRes.ok) return false;
+  const oidcConfig = (await discoveryRes.json()) as OidcConfig;
+
+  const jwksRes = await fetch(oidcConfig.jwks_uri);
+  if (!jwksRes.ok) return false;
+  const jwks = (await jwksRes.json()) as { keys: JwkKey[] };
+
+  const signingKey = header.kid
+    ? jwks.keys.find((k) => k.kid === header.kid)
+    : jwks.keys.find((k) => !k.use || k.use === 'sig');
+  if (!signingKey) return false;
+
+  const alg = header.alg;
+  let cryptoKey: CryptoKey;
+  try {
+    cryptoKey = await importSigningKey(signingKey, alg);
+  } catch {
+    return false;
+  }
+
+  const signatureInput = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+  const signature = base64UrlDecodeToBuffer(parts[2]);
+
+  try {
+    if (alg.startsWith('RS')) {
+      return await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, signatureInput);
+    }
+    if (alg.startsWith('ES')) {
+      const hash = alg === 'ES256' ? 'SHA-256' : 'SHA-384';
+      return await crypto.subtle.verify({ name: 'ECDSA', hash }, cryptoKey, signature, signatureInput);
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 export async function authGuard(request: Request, env: Env): Promise<Response | null> {
+  let settings: AppSettings;
   try {
     const raw = await env.RESUME_KV.get('settings');
     if (!raw) return null; // no settings yet — allow (initial setup)
-    const settings = JSON.parse(raw) as AppSettings;
-    if (!settings.auth?.enabled) return null;
-
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return err('Missing or invalid authorization header', 401);
-    }
-    const token = authHeader.slice(7);
-    if (!token) return err('Empty token', 401);
-
-    // Token is present. Full JWT validation (JWKS) is a TODO — same as backend.
-    return null;
+    settings = JSON.parse(raw) as AppSettings;
   } catch {
-    return null; // fail open
+    return null; // can't parse settings — allow (initial setup / misconfiguration)
   }
+
+  if (!settings.auth?.enabled) return null;
+
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return err('Missing or invalid authorization header', 401);
+  }
+  const token = authHeader.slice(7);
+  if (!token) return err('Empty token', 401);
+
+  // Validate JWT signature, expiry, issuer, and audience
+  try {
+    const valid = await verifyJwt(token, settings.auth.authority, settings.auth.clientId);
+    if (!valid) return err('Invalid or expired token', 401);
+  } catch {
+    // Any unexpected error during validation → deny access (fail closed)
+    return err('Token validation failed', 401);
+  }
+
+  return null; // authorized
 }
 
 // ---- Default data ----

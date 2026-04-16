@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ResumeData, ResumeTheme, AppSettings, Language } from './lib/types';
 import { getResume, saveResume, getTheme, getThemes, getSettings, setAuthToken } from './lib/api';
-import { buildAuthUrl, exchangeCodeForToken, getStoredToken, storeToken, validateOAuthState } from './lib/auth';
+import { buildAuthUrl, exchangeCodeForToken, getStoredToken, storeToken, validateOAuthState, clearToken, buildLogoutUrl } from './lib/auth';
 import { resolveResume } from './lib/resolve';
 import ResumeEditor from './components/editor/ResumeEditor';
 import ResumeLayout from './components/resume/ResumeLayout';
@@ -10,7 +10,7 @@ import ThemeSelector from './components/toolbar/ThemeSelector';
 import ThemeEditor from './components/editor/theme/ThemeEditor';
 import PdfExportButton from './components/pdf/PdfExportButton';
 import SettingsPage from './components/SettingsPage';
-import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, Moon, Sun, Pencil, ArrowLeft, X } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, Moon, Sun, Pencil, ArrowLeft, X, LogOut } from 'lucide-react';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 type AppMode = 'preview' | 'editor';
@@ -116,9 +116,9 @@ export default function App() {
 
     setAuthLoading(true);
     exchangeCodeForToken(code, appSettings.auth)
-      .then(async (token) => {
-        storeToken(token);
-        setAuthToken(token);
+      .then(async ({ accessToken, idToken }) => {
+        storeToken(accessToken, idToken);
+        setAuthToken(accessToken);
         window.history.replaceState({}, '', window.location.pathname);
         // Now that we have a valid token, load the resume + theme data
         await loadResumeData();
@@ -188,6 +188,23 @@ export default function App() {
     const next = !darkMode;
     setDarkMode(next);
     localStorage.setItem('darkMode', String(next));
+  }
+
+  async function handleLogout() {
+    clearToken();
+    setAuthToken(null);
+    if (appSettings?.auth.enabled) {
+      try {
+        const logoutUrl = await buildLogoutUrl(appSettings.auth);
+        if (logoutUrl) {
+          window.location.href = logoutUrl;
+          return;
+        }
+      } catch {
+        // fall through to page reload
+      }
+    }
+    window.location.reload();
   }
 
   // ---- Render: loading / error ----
@@ -353,6 +370,15 @@ export default function App() {
           >
             <Settings size={16} />
           </button>
+          {appSettings?.auth.enabled && (
+            <button
+              onClick={handleLogout}
+              aria-label="Sign out"
+              className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+            >
+              <LogOut size={16} />
+            </button>
+          )}
         </div>
       </header>
 
