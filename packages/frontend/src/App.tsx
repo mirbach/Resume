@@ -199,20 +199,25 @@ export default function App() {
   }
 
   async function handleLogout() {
-    clearToken();
-    setAuthToken(null);
+    let logoutUrl: string | null = null;
+
     if (appSettings?.auth.enabled) {
       try {
-        const logoutUrl = await buildLogoutUrl(appSettings.auth);
-        if (logoutUrl) {
-          window.location.href = logoutUrl;
-          return;
-        }
+        logoutUrl = await buildLogoutUrl(appSettings.auth);
       } catch {
-        // fall through to page reload
+        // fall through to local logout
       }
     }
+
     sessionStorage.setItem(APP_MODE_KEY, 'preview');
+    clearToken();
+    setAuthToken(null);
+
+    if (logoutUrl) {
+      window.location.href = logoutUrl;
+      return;
+    }
+
     window.location.reload();
   }
 

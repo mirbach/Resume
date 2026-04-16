@@ -15,11 +15,17 @@ export function setAuthToken(token: string | null) {
 }
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (_authToken) headers['Authorization'] = `Bearer ${_authToken}`;
+  const headers: Record<string, string> = {};
+  if (!(options?.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+  if (_authToken) headers.Authorization = `Bearer ${_authToken}`;
   const res = await fetch(`${API_BASE}${url}`, {
-    headers,
     ...options,
+    headers: {
+      ...headers,
+      ...(options?.headers as Record<string, string> | undefined),
+    },
   });
   const json = (await res.json()) as ApiResponse<T>;
   if (!json.success) {
@@ -74,13 +80,10 @@ export async function uploadFile(
 ): Promise<{ path: string; filename: string }> {
   const formData = new FormData();
   formData.append('file', file);
-  const res = await fetch(`${API_BASE}/upload/${type}`, {
+  return request<{ path: string; filename: string }>(`/upload/${type}`, {
     method: 'POST',
     body: formData,
   });
-  const json = (await res.json()) as ApiResponse<{ path: string; filename: string }>;
-  if (!json.success) throw new Error(json.error || 'Upload failed');
-  return json.data!;
 }
 
 // Settings

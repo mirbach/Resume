@@ -141,6 +141,7 @@ export async function buildLogoutUrl(auth: AuthSettings): Promise<string | null>
 
     const idToken = getStoredIdToken();
     const params = new URLSearchParams({
+      client_id: auth.clientId,
       post_logout_redirect_uri: auth.redirectUri,
     });
     if (idToken) params.set('id_token_hint', idToken);
