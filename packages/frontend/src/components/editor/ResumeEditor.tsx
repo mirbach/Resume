@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ResumeData } from '../../lib/types';
 import PersonalInfoForm from './forms/PersonalInfoForm';
 import SummaryForm from './forms/SummaryForm';
@@ -37,6 +37,7 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
+const ACTIVE_TAB_KEY = 'resume_editor_tab';
 
 interface Props {
   data: ResumeData;
@@ -44,7 +45,14 @@ interface Props {
 }
 
 export default function ResumeEditor({ data, onChange }: Props) {
-  const [activeTab, setActiveTab] = useState<TabId>('personal');
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const storedTab = sessionStorage.getItem(ACTIVE_TAB_KEY);
+    return TABS.some((tab) => tab.id === storedTab) ? (storedTab as TabId) : 'personal';
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem(ACTIVE_TAB_KEY, activeTab);
+  }, [activeTab]);
 
   function renderForm() {
     switch (activeTab) {

@@ -15,6 +15,8 @@ import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, Moon, Sun, 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 type AppMode = 'preview' | 'editor';
 
+const APP_MODE_KEY = 'resume_app_mode';
+
 export default function App() {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [theme, setTheme] = useState<ResumeTheme | null>(null);
@@ -26,7 +28,10 @@ export default function App() {
   const [showThemeEditor, setShowThemeEditor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
-  const [mode, setMode] = useState<AppMode>('preview');
+  const [mode, setMode] = useState<AppMode>(() => {
+    const storedMode = sessionStorage.getItem(APP_MODE_KEY);
+    return storedMode === 'editor' ? 'editor' : 'preview';
+  });
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -66,6 +71,12 @@ export default function App() {
           setThemeName(list[0].filename);
         }
         setTheme(themeData);
+
+        // Restore editor mode on refresh when the session is still authenticated.
+        const wantsEditor = sessionStorage.getItem(APP_MODE_KEY) === 'editor';
+        if (wantsEditor && (!settings?.auth.enabled || apiToken)) {
+          setMode('editor');
+        }
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : 'Failed to load app data');
       } finally {
@@ -74,6 +85,10 @@ export default function App() {
     }
     init();
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem(APP_MODE_KEY, mode);
+  }, [mode]);
 
   // Load resume + theme data (used after OAuth exchange)
   async function loadResumeData() {
@@ -197,6 +212,7 @@ export default function App() {
         // fall through to page reload
       }
     }
+    sessionStorage.setItem(APP_MODE_KEY, 'preview');
     window.location.reload();
   }
 
