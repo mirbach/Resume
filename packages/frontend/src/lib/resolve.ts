@@ -49,7 +49,13 @@ export function resolveResume(data: ResumeData, lang: Language): ResolvedResume 
       category: resolve(s.category, lang),
       items: s.items,
     })),
-    certifications: data.certifications,
+    certifications: data.certifications.map((c) => ({
+      id: c.id,
+      name: c.name,
+      issuer: c.issuer,
+      date: resolve(c.date, lang),
+      url: c.url,
+    })),
     languages: data.languages.map((l) => ({
       id: l.id,
       language: resolve(l.language, lang),
@@ -76,6 +82,7 @@ export function resolveResume(data: ResumeData, lang: Language): ResolvedResume 
       description: resolve(p.description, lang),
       role: resolve(p.role, lang),
       highlights: p.highlights.map((h) => resolve(h, lang)),
+      link: p.link,
     })),
     references: data.references.map((r) => ({
       id: r.id,

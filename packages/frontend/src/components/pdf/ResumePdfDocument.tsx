@@ -476,7 +476,12 @@ function SectionProducts({ resume, styles }: { resume: ResolvedResume; styles: R
       <Text style={styles.sectionTitle}>Products</Text>
       {resume.products.map((prod) => (
         <View key={prod.id} style={{ marginBottom: 6 }}>
-          <Text style={styles.prodName}>{prod.name}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+            <Text style={styles.prodName}>{prod.name}</Text>
+            {prod.link && (
+              <Text style={{ fontSize: 8, color: styles.techTag.color }}>{prod.link}</Text>
+            )}
+          </View>
           <Text style={styles.prodDesc}>{prod.description}</Text>
           <Text style={styles.prodRole}>Role: {prod.role}</Text>
           {prod.highlights.map((h, i) => (

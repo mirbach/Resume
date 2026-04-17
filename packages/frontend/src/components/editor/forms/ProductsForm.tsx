@@ -114,6 +114,16 @@ export default function ProductsForm({ data, onChange }: Props) {
             value={entry.role}
             onChange={(role) => updateEntry(index, { ...entry, role })}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Website (optional)</label>
+            <input
+              type="url"
+              className={inputClasses}
+              value={entry.link ?? ''}
+              placeholder="https://..."
+              onChange={(e) => updateEntry(index, { ...entry, link: e.target.value || undefined })}
+            />
+          </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">Highlights</label>

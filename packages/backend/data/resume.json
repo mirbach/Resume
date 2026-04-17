@@ -231,13 +231,19 @@
       "id": "cert-1",
       "name": "Azure Solutions Architect Expert",
       "issuer": "Microsoft",
-      "date": "2023"
+      "date": {
+        "en": "Dec 2023",
+        "de": "Dez 2023"
+      }
     },
     {
       "id": "cert-2",
       "name": "Certified Kubernetes Administrator (CKA)",
       "issuer": "CNCF",
-      "date": "2022"
+      "date": {
+        "en": "2022",
+        "de": "2022"
+      }
     }
   ],
   "languages": [
@@ -336,7 +342,8 @@
           "en": "Built self-service onboarding reducing customer setup from 2 weeks to 2 hours",
           "de": "Entwickelte Self-Service-Onboarding, das die Kundeneinrichtung von 2 Wochen auf 2 Stunden reduzierte"
         }
-      ]
+      ],
+      "link": "www.microsoftdefnder.com"
     },
     {
       "id": "dfe4b4f5-a260-4516-a53b-9e2e70da9e14",

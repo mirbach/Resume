@@ -1,4 +1,5 @@
 import type { CertificationEntry } from '../../../lib/types';
+import BilingualField from '../BilingualField';
 import { Plus, Trash2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,7 +13,7 @@ export default function CertificationsForm({ data, onChange }: Props) {
     'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none';
 
   function addEntry() {
-    onChange([...data, { id: uuidv4(), name: '', issuer: '', date: '', url: '' }]);
+    onChange([...data, { id: uuidv4(), name: '', issuer: '', date: { en: '', de: '' }, url: '' }]);
   }
 
   function updateEntry(index: number, entry: CertificationEntry) {
@@ -55,7 +56,7 @@ export default function CertificationsForm({ data, onChange }: Props) {
               <button onClick={() => removeEntry(index)} aria-label="Remove certification" className="p-1 text-red-400 hover:text-red-600"><Trash2 size={16} /></button>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
               <input
@@ -76,17 +77,13 @@ export default function CertificationsForm({ data, onChange }: Props) {
                 placeholder="Microsoft"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Date</label>
-              <input
-                type="text"
-                className={inputClasses}
-                value={entry.date}
-                onChange={(e) => updateEntry(index, { ...entry, date: e.target.value })}
-                placeholder="2023"
-              />
-            </div>
           </div>
+          <BilingualField
+            label="Date"
+            value={entry.date}
+            onChange={(date) => updateEntry(index, { ...entry, date })}
+            placeholder={{ en: '2023', de: '2023' }}
+          />
           <div>
             <label className="block text-sm font-medium text-gray-700">Credential URL</label>
             <input

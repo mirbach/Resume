@@ -56,7 +56,7 @@ export interface CertificationEntry {
   id: string;
   name: string;
   issuer: string;
-  date: string;
+  date: BilingualText;
   url?: string;
 }
 
@@ -82,6 +82,7 @@ export interface ProductEntry {
   description: BilingualText;
   role: BilingualText;
   highlights: BilingualText[];
+  link?: string;
 }
 
 export interface ReferenceEntry {
@@ -278,6 +279,15 @@ export interface ResolvedProduct {
   description: string;
   role: string;
   highlights: string[];
+  link?: string;
+}
+
+export interface ResolvedCertificationEntry {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+  url?: string;
 }
 
 export interface ResolvedReference {
@@ -294,7 +304,7 @@ export interface ResolvedResume {
   experience: ResolvedExperience[];
   education: ResolvedEducation[];
   skills: ResolvedSkillCategory[];
-  certifications: CertificationEntry[];
+  certifications: ResolvedCertificationEntry[];
   languages: ResolvedLanguageEntry[];
   projects: ResolvedProject[];
   products: ResolvedProduct[];

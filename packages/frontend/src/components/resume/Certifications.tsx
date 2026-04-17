@@ -1,7 +1,7 @@
-import type { CertificationEntry, ResumeTheme } from '../../lib/types';
+import type { ResolvedCertificationEntry, ResumeTheme } from '../../lib/types';
 
 interface Props {
-  data: CertificationEntry[];
+  data: ResolvedCertificationEntry[];
   theme: ResumeTheme;
 }
 

@@ -23,9 +23,22 @@ export default function Products({ data, theme }: Props) {
       <div className="space-y-3">
         {data.map((prod) => (
           <div key={prod.id}>
-            <h3 className="font-semibold text-sm" style={{ color: theme.colors.heading }}>
-              {prod.name}
-            </h3>
+            <div className="flex items-baseline gap-2">
+              <h3 className="font-semibold text-sm" style={{ color: theme.colors.heading }}>
+                {prod.name}
+              </h3>
+              {prod.link && (
+                <a
+                  href={prod.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs"
+                  style={{ color: theme.colors.accent }}
+                >
+                  {prod.link}
+                </a>
+              )}
+            </div>
             <p className="text-sm mt-0.5" style={{ color: theme.colors.text, whiteSpace: 'pre-wrap' }}>
               {prod.description}
             </p>

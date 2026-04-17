@@ -56,7 +56,7 @@ export interface CertificationEntry {
   id: string;
   name: string;
   issuer: string;
-  date: string;
+  date: BilingualText;
   url?: string;
 }
 
@@ -82,6 +82,7 @@ export interface ProductEntry {
   description: BilingualText;
   role: BilingualText;
   highlights: BilingualText[];
+  link?: string;
 }
 
 export interface ReferenceEntry {
