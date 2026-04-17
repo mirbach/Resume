@@ -1,12 +1,12 @@
 {
   "name": "shiftavenue GmbH",
   "colors": {
-    "primary": "#2563eb",
-    "secondary": "#6b7280",
-    "accent": "#059669",
-    "text": "#1f2937",
-    "background": "#ffffff",
-    "heading": "#111827"
+    "primary": "#762a8b",
+    "secondary": "#fefbfb",
+    "accent": "#c12182",
+    "text": "#fefefe",
+    "background": "#04020e",
+    "heading": "#f9f5fa"
   },
   "fonts": {
     "heading": "Helvetica",
@@ -36,7 +36,7 @@
       "left": 40
     }
   },
-  "logo": "/api/uploads/b82c58b6-a9da-45c7-8864-b5d826c0e1c0.png",
+  "logo": "/api/uploads/e90fc93c-4186-4152-ae2e-fcdb43331575.png",
   "companyName": "shiftavenue GmbH",
   "companyWebsite": "shiftavenue.com",
   "companyEmail": "andreas.mirbach.extern@shifavenue.com"

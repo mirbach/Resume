@@ -6,19 +6,11 @@ interface Props {
 }
 
 const ELITE_COLORS: Record<EliteCategory, { bg: string; text: string; label: string }> = {
-  experience: { bg: '#dbeafe', text: '#1d4ed8', label: 'E' },
-  leadership: { bg: '#f3e8ff', text: '#7c3aed', label: 'L' },
-  impact: { bg: '#dcfce7', text: '#15803d', label: 'I' },
-  transformation: { bg: '#ffedd5', text: '#c2410c', label: 'T' },
-  excellence: { bg: '#fef9c3', text: '#a16207', label: 'E' },
-};
-
-const ELITE_LABELS: Record<EliteCategory, string> = {
-  experience: 'Experience',
-  leadership: 'Leadership',
-  impact: 'Impact',
-  transformation: 'Transformation',
-  excellence: 'Excellence',
+  experience: { bg: '#dbeafe', text: '#1d4ed8', label: 'Experience' },
+  leadership: { bg: '#f3e8ff', text: '#7c3aed', label: 'Leadership' },
+  impact: { bg: '#dcfce7', text: '#15803d', label: 'Impact' },
+  transformation: { bg: '#ffedd5', text: '#c2410c', label: 'Transformation' },
+  excellence: { bg: '#fef9c3', text: '#a16207', label: 'Excellence' },
 };
 
 export default function Projects({ data, theme }: Props) {
@@ -72,21 +64,9 @@ export default function Projects({ data, theme }: Props) {
             )}
             {proj.achievements.length > 0 && (
               <ul className="mt-2 space-y-2">
-                {proj.achievements.map((ach) => (
+                {proj.achievements.filter(a => a.challenge || a.action || a.result).map((ach) => (
                   <li key={ach.id} className="text-sm" style={{ color: theme.colors.text }}>
                     <div className="flex items-start gap-2">
-                      {ach.eliteCategory && (
-                        <span
-                          className="shrink-0 inline-flex items-center justify-center rounded-full w-5 h-5 text-[10px] font-bold mt-0.5"
-                          style={{
-                            backgroundColor: ELITE_COLORS[ach.eliteCategory].bg,
-                            color: ELITE_COLORS[ach.eliteCategory].text,
-                          }}
-                          title={ELITE_LABELS[ach.eliteCategory]}
-                        >
-                          {ELITE_COLORS[ach.eliteCategory].label}
-                        </span>
-                      )}
                       <div className="flex-1">
                         <p style={{ whiteSpace: 'pre-wrap' }}>
                           <span className="font-medium" style={{ color: theme.colors.accent }}>Challenge: </span>
@@ -101,6 +81,18 @@ export default function Projects({ data, theme }: Props) {
                           {ach.result}
                         </p>
                       </div>
+                      {ach.eliteCategory && (
+                        <span
+                          className="shrink-0 inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-bold mt-0.5"
+                          style={{
+                            backgroundColor: ELITE_COLORS[ach.eliteCategory].bg,
+                            color: ELITE_COLORS[ach.eliteCategory].text,
+                          }}
+                          title={ELITE_COLORS[ach.eliteCategory].label}
+                        >
+                          {ELITE_COLORS[ach.eliteCategory].label}
+                        </span>
+                      )}
                     </div>
                   </li>
                 ))}

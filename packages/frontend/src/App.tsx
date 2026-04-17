@@ -11,7 +11,8 @@ import ThemeEditor from './components/editor/theme/ThemeEditor';
 import PdfExportButton from './components/pdf/PdfExportButton';
 import PrintButton from './components/pdf/PrintButton';
 import SettingsPage from './components/SettingsPage';
-import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, Moon, Sun, Pencil, ArrowLeft, X, LogOut } from 'lucide-react';
+import HelpPage from './components/HelpPage';
+import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, HelpCircle, Moon, Sun, Pencil, ArrowLeft, X, LogOut } from 'lucide-react';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 type AppMode = 'preview' | 'editor';
@@ -54,6 +55,7 @@ export default function App() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showThemeEditor, setShowThemeEditor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [themeListKey, setThemeListKey] = useState(0);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [mode, setMode] = useState<AppMode>(() => {
@@ -391,6 +393,13 @@ export default function App() {
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button
+            onClick={() => setShowHelp(true)}
+            aria-label="Open frameworks guide"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          >
+            <HelpCircle size={16} />
+          </button>
+          <button
             onClick={() => setShowSettings(true)}
             aria-label="Settings"
             className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -409,7 +418,11 @@ export default function App() {
         </div>
       </header>
 
-      {showSettings ? (
+      {showHelp ? (
+        <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+          <HelpPage onClose={() => setShowHelp(false)} language={language} />
+        </div>
+      ) : showSettings ? (
         <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
           <SettingsPage onClose={() => setShowSettings(false)} />
         </div>

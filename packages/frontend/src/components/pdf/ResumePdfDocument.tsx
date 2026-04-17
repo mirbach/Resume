@@ -36,11 +36,11 @@ function pdfFontBold(name: string): string {
 }
 
 const ELITE_LABELS: Record<EliteCategory, string> = {
-  experience: 'E',
-  leadership: 'L',
-  impact: 'I',
-  transformation: 'T',
-  excellence: 'E',
+  experience: 'Experience',
+  leadership: 'Leadership',
+  impact: 'Impact',
+  transformation: 'Transformation',
+  excellence: 'Excellence',
 };
 
 const ELITE_BG: Record<EliteCategory, string> = {
@@ -166,9 +166,11 @@ function createStyles(theme: ResumeTheme) {
     achLabel: { fontSize: 8, fontFamily: headingFontBold, color: theme.colors.accent },
     achText: { fontSize: 9 },
     eliteBadge: {
-      width: 12, height: 12, borderRadius: 6,
-      fontSize: 7, textAlign: 'center',
-      marginRight: 4, marginTop: 1,
+      borderRadius: 4,
+      paddingHorizontal: 4, paddingVertical: 1,
+      fontSize: 7,
+      marginLeft: 4, marginTop: 1,
+      alignSelf: 'flex-start',
     },
     skillCategory: { marginBottom: 4 },
     skillCatName: { fontSize: 9, fontFamily: headingFontBold, color: theme.colors.heading, marginBottom: 2 },
@@ -305,19 +307,12 @@ function SectionExperience({ resume, styles }: { resume: ResolvedResume; styles:
           <View style={styles.entryHeader}>
             <View>
               <Text style={styles.entryTitle}>{exp.role}</Text>
-              <Text style={styles.entrySubtitle}>{exp.company} — {exp.location}</Text>
+              <Text style={styles.entrySubtitle}>{[exp.company, exp.location].filter(Boolean).join(' \u2014 ')}</Text>
             </View>
             <Text style={styles.entryPeriod}>{exp.period}</Text>
           </View>
-          {exp.achievements.map((ach) => (
+          {exp.achievements.filter(a => a.challenge || a.action || a.result).map((ach) => (
             <View key={ach.id} style={[styles.achievement, { flexDirection: 'row' }]}>
-              {ach.eliteCategory && (
-                <View style={[styles.eliteBadge, { backgroundColor: ELITE_BG[ach.eliteCategory], color: ELITE_COLOR[ach.eliteCategory] }]}>
-                  <Text style={{ fontSize: 7, fontWeight: 700, textAlign: 'center', color: ELITE_COLOR[ach.eliteCategory!] }}>
-                    {ELITE_LABELS[ach.eliteCategory]}
-                  </Text>
-                </View>
-              )}
               <View style={{ flex: 1 }}>
                 <Text style={styles.achText}>
                   <Text style={styles.achLabel}>Challenge: </Text>{ach.challenge}
@@ -329,6 +324,13 @@ function SectionExperience({ resume, styles }: { resume: ResolvedResume; styles:
                   <Text style={styles.achLabel}>Result: </Text>{ach.result}
                 </Text>
               </View>
+              {ach.eliteCategory && (
+                <View style={[styles.eliteBadge, { backgroundColor: ELITE_BG[ach.eliteCategory], color: ELITE_COLOR[ach.eliteCategory] }]}>
+                  <Text style={{ fontSize: 7, fontWeight: 700, textAlign: 'center', color: ELITE_COLOR[ach.eliteCategory!] }}>
+                    {ELITE_LABELS[ach.eliteCategory]}
+                  </Text>
+                </View>
+              )}
             </View>
           ))}
         </View>
@@ -435,15 +437,8 @@ function SectionProjects({ resume, styles }: { resume: ResolvedResume; styles: R
               ))}
             </View>
           )}
-          {proj.achievements.map((ach) => (
+          {proj.achievements.filter(a => a.challenge || a.action || a.result).map((ach) => (
             <View key={ach.id} style={[styles.achievement, { flexDirection: 'row' }]}>
-              {ach.eliteCategory && (
-                <View style={[styles.eliteBadge, { backgroundColor: ELITE_BG[ach.eliteCategory], color: ELITE_COLOR[ach.eliteCategory] }]}>
-                  <Text style={{ fontSize: 7, fontWeight: 700, textAlign: 'center', color: ELITE_COLOR[ach.eliteCategory!] }}>
-                    {ELITE_LABELS[ach.eliteCategory]}
-                  </Text>
-                </View>
-              )}
               <View style={{ flex: 1 }}>
                 <Text style={styles.achText}>
                   <Text style={styles.achLabel}>Challenge: </Text>{ach.challenge}
@@ -455,6 +450,13 @@ function SectionProjects({ resume, styles }: { resume: ResolvedResume; styles: R
                   <Text style={styles.achLabel}>Result: </Text>{ach.result}
                 </Text>
               </View>
+              {ach.eliteCategory && (
+                <View style={[styles.eliteBadge, { backgroundColor: ELITE_BG[ach.eliteCategory], color: ELITE_COLOR[ach.eliteCategory] }]}>
+                  <Text style={{ fontSize: 7, fontWeight: 700, textAlign: 'center', color: ELITE_COLOR[ach.eliteCategory!] }}>
+                    {ELITE_LABELS[ach.eliteCategory]}
+                  </Text>
+                </View>
+              )}
             </View>
           ))}
         </View>
