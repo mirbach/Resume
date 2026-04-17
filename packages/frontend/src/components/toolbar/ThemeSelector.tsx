@@ -6,14 +6,15 @@ import { Palette } from 'lucide-react';
 interface Props {
   value: string;
   onChange: (themeName: string) => void;
+  refreshKey?: number;
 }
 
-export default function ThemeSelector({ value, onChange }: Props) {
+export default function ThemeSelector({ value, onChange, refreshKey = 0 }: Props) {
   const [themes, setThemes] = useState<ThemeListItem[]>([]);
 
   useEffect(() => {
     getThemes().then((list) => setThemes(list));
-  }, [value]);
+  }, [value, refreshKey]);
 
   return (
     <div className="flex items-center gap-2">

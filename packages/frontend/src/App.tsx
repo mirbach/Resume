@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { ResumeData, ResumeTheme, AppSettings, Language } from './lib/types';
+import type { ResumeData, ResumeTheme, AppSettings, Language, ResolvedResume } from './lib/types';
 import { getResume, saveResume, getTheme, getThemes, getSettings, setAuthToken } from './lib/api';
 import { buildAuthUrl, exchangeCodeForToken, getApiToken, storeToken, validateOAuthState, clearToken, buildLogoutUrl } from './lib/auth';
 import { resolveResume } from './lib/resolve';
@@ -18,6 +18,32 @@ type AppMode = 'preview' | 'editor';
 
 const APP_MODE_KEY = 'resume_app_mode';
 
+/** Renders a ResumeLayout at full A4 width (794px) and scales it down to fit its container. */
+function ScaledPreview({ resume, theme }: { resume: ResolvedResume; theme: ResumeTheme }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [zoom, setZoom] = useState(1);
+  const A4_WIDTH = 794; // px — 210mm at 96 dpi
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      const available = el.clientWidth;
+      setZoom(Math.min(1, available / A4_WIDTH));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="w-full">
+      <div style={{ width: A4_WIDTH, zoom }}>
+        <ResumeLayout resume={resume} theme={theme} />
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [theme, setTheme] = useState<ResumeTheme | null>(null);
@@ -28,6 +54,7 @@ export default function App() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showThemeEditor, setShowThemeEditor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [themeListKey, setThemeListKey] = useState(0);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [mode, setMode] = useState<AppMode>(() => {
     const storedMode = sessionStorage.getItem(APP_MODE_KEY);
@@ -348,7 +375,7 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <ThemeSelector value={themeName} onChange={setThemeName} />
+          <ThemeSelector value={themeName} onChange={setThemeName} refreshKey={themeListKey} />
           <button
             onClick={() => setShowThemeEditor(true)}
             className="flex items-center gap-1 rounded-md border border-gray-300 dark:border-gray-600 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -393,8 +420,8 @@ export default function App() {
             <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 overflow-hidden">
               <ResumeEditor data={resumeData} onChange={handleResumeChange} />
             </div>
-            <div className="w-1/2 overflow-y-auto p-6 bg-gray-200 dark:bg-gray-700">
-              <ResumeLayout resume={resolved} theme={theme} />
+            <div className="w-1/2 overflow-y-auto p-4 bg-gray-200 dark:bg-gray-700">
+              <ScaledPreview resume={resolved} theme={theme} />
             </div>
           </div>
 
@@ -403,6 +430,7 @@ export default function App() {
               currentTheme={themeName}
               onThemeChange={(name) => {
                 setThemeName(name);
+                setThemeListKey((k) => k + 1);
                 getTheme(name).then(setTheme).catch(console.error);
                 setShowThemeEditor(false);
               }}
