@@ -46,6 +46,30 @@ export async function saveResume(data: ResumeData): Promise<ResumeData> {
   });
 }
 
+export function exportResumeJson(data: ResumeData): void {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'resume.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function importResumeJson(file: File): Promise<ResumeData> {
+  const text = await file.text();
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error('Invalid JSON file');
+  }
+  if (typeof parsed !== 'object' || parsed === null || !('personal' in parsed)) {
+    throw new Error('File does not look like a resume export');
+  }
+  return saveResume(parsed as ResumeData);
+}
+
 // Themes
 export async function getThemes(): Promise<ThemeListItem[]> {
   return request<ThemeListItem[]>('/themes');

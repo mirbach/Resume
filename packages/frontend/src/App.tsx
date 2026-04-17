@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ResumeData, ResumeTheme, AppSettings, Language, ResolvedResume } from './lib/types';
-import { getResume, saveResume, getTheme, getThemes, getSettings, setAuthToken } from './lib/api';
+import { getResume, saveResume, getTheme, getThemes, getSettings, setAuthToken, exportResumeJson, importResumeJson } from './lib/api';
 import { buildAuthUrl, exchangeCodeForToken, getApiToken, storeToken, validateOAuthState, clearToken, buildLogoutUrl } from './lib/auth';
 import { resolveResume } from './lib/resolve';
 import ResumeEditor from './components/editor/ResumeEditor';
@@ -12,7 +12,7 @@ import PdfExportButton from './components/pdf/PdfExportButton';
 import PrintButton from './components/pdf/PrintButton';
 import SettingsPage from './components/SettingsPage';
 import HelpPage from './components/HelpPage';
-import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, HelpCircle, Moon, Sun, Pencil, ArrowLeft, X, LogOut } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, HelpCircle, Moon, Sun, Pencil, ArrowLeft, X, LogOut, Download, Upload } from 'lucide-react';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 type AppMode = 'preview' | 'editor';
@@ -67,6 +67,22 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    importResumeJson(file)
+      .then((data) => {
+        setResumeData(data);
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      })
+      .catch((err: unknown) => {
+        alert(`Import failed: ${err instanceof Error ? err.message : String(err)}`);
+      });
+  }
 
   // Load initial data
   useEffect(() => {
@@ -402,6 +418,29 @@ export default function App() {
             <Palette size={14} /> Company
           </button>
           <LanguageSwitcher language={language} onChange={setLanguage} />
+          <button
+            onClick={() => resumeData && exportResumeJson(resumeData)}
+            aria-label="Export resume JSON"
+            title="Export JSON"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          >
+            <Download size={16} />
+          </button>
+          <button
+            onClick={() => importInputRef.current?.click()}
+            aria-label="Import resume JSON"
+            title="Import JSON"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          >
+            <Upload size={16} />
+          </button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            onChange={handleImport}
+          />
           <button
             aria-label="Toggle dark mode"
             onClick={toggleDarkMode}
