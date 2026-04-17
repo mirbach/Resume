@@ -13,6 +13,7 @@ import {
   Circle,
 } from '@react-pdf/renderer';
 import type { ResolvedResume, ResumeTheme, ResumeSection, EliteCategory } from '../../lib/types';
+import { lightTint } from '../../lib/colorUtils';
 
 // pdfkit only supports TTF/OTF — woff/woff2 cause DataView errors.
 // Map any font name to the nearest built-in PDF font so export always works.
@@ -176,7 +177,7 @@ function createStyles(theme: ResumeTheme) {
     skillCatName: { fontSize: 9, fontFamily: headingFontBold, color: theme.colors.heading, marginBottom: 2 },
     skillTag: {
       fontSize: 8, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 8,
-      backgroundColor: theme.colors.primary + '20', color: theme.colors.primary, marginRight: 4, marginBottom: 2,
+      backgroundColor: lightTint(theme.colors.primary), color: theme.colors.primary, marginRight: 4, marginBottom: 2,
     },
     tagRow: { flexDirection: 'row', flexWrap: 'wrap' },
     certRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
@@ -192,7 +193,7 @@ function createStyles(theme: ResumeTheme) {
     projDesc: { fontSize: 9, marginTop: 1 },
     techTag: {
       fontSize: 7, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 3,
-      backgroundColor: theme.colors.accent + '15', color: theme.colors.accent,
+      backgroundColor: lightTint(theme.colors.accent), color: theme.colors.accent,
       marginRight: 3, marginBottom: 2,
     },
     prodName: { fontSize: 10, fontFamily: headingFontBold, color: theme.colors.heading },

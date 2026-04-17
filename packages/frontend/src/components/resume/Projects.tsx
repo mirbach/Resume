@@ -1,4 +1,5 @@
 import type { ResolvedProject, ResumeTheme, EliteCategory } from '../../lib/types';
+import { lightTint } from '../../lib/colorUtils';
 
 interface Props {
   data: ResolvedProject[];
@@ -53,7 +54,7 @@ export default function Projects({ data, theme }: Props) {
                     key={i}
                     className="rounded px-1.5 py-0.5 text-xs"
                     style={{
-                      backgroundColor: theme.colors.accent + '15',
+                      backgroundColor: lightTint(theme.colors.accent),
                       color: theme.colors.accent,
                     }}
                   >

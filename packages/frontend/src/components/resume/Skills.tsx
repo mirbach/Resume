@@ -1,4 +1,5 @@
 import type { ResolvedSkillCategory, ResumeTheme } from '../../lib/types';
+import { lightTint } from '../../lib/colorUtils';
 
 interface Props {
   data: ResolvedSkillCategory[];
@@ -35,7 +36,7 @@ export default function Skills({ data, theme }: Props) {
                   key={i}
                   className="rounded-full px-2.5 py-0.5 text-xs font-medium"
                   style={{
-                    backgroundColor: theme.colors.primary + '15',
+                    backgroundColor: lightTint(theme.colors.primary),
                     color: theme.colors.primary,
                   }}
                 >
