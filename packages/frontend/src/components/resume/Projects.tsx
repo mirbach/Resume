@@ -1,9 +1,25 @@
-import type { ResolvedProject, ResumeTheme } from '../../lib/types';
+import type { ResolvedProject, ResumeTheme, EliteCategory } from '../../lib/types';
 
 interface Props {
   data: ResolvedProject[];
   theme: ResumeTheme;
 }
+
+const ELITE_COLORS: Record<EliteCategory, { bg: string; text: string; label: string }> = {
+  experience: { bg: '#dbeafe', text: '#1d4ed8', label: 'E' },
+  leadership: { bg: '#f3e8ff', text: '#7c3aed', label: 'L' },
+  impact: { bg: '#dcfce7', text: '#15803d', label: 'I' },
+  transformation: { bg: '#ffedd5', text: '#c2410c', label: 'T' },
+  excellence: { bg: '#fef9c3', text: '#a16207', label: 'E' },
+};
+
+const ELITE_LABELS: Record<EliteCategory, string> = {
+  experience: 'Experience',
+  leadership: 'Leadership',
+  impact: 'Impact',
+  transformation: 'Transformation',
+  excellence: 'Excellence',
+};
 
 export default function Projects({ data, theme }: Props) {
   if (!data.length) return null;
@@ -33,23 +49,63 @@ export default function Projects({ data, theme }: Props) {
                 </span>
               )}
             </div>
-            <p className="text-sm mt-0.5" style={{ color: theme.colors.text, whiteSpace: 'pre-wrap' }}>
-              {proj.description}
-            </p>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {proj.technologies.map((tech, i) => (
-                <span
-                  key={i}
-                  className="rounded px-1.5 py-0.5 text-xs"
-                  style={{
-                    backgroundColor: theme.colors.accent + '15',
-                    color: theme.colors.accent,
-                  }}
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
+            {proj.description && (
+              <p className="text-sm mt-0.5" style={{ color: theme.colors.text, whiteSpace: 'pre-wrap' }}>
+                {proj.description}
+              </p>
+            )}
+            {proj.technologies.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {proj.technologies.map((tech, i) => (
+                  <span
+                    key={i}
+                    className="rounded px-1.5 py-0.5 text-xs"
+                    style={{
+                      backgroundColor: theme.colors.accent + '15',
+                      color: theme.colors.accent,
+                    }}
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            )}
+            {proj.achievements.length > 0 && (
+              <ul className="mt-2 space-y-2">
+                {proj.achievements.map((ach) => (
+                  <li key={ach.id} className="text-sm" style={{ color: theme.colors.text }}>
+                    <div className="flex items-start gap-2">
+                      {ach.eliteCategory && (
+                        <span
+                          className="shrink-0 inline-flex items-center justify-center rounded-full w-5 h-5 text-[10px] font-bold mt-0.5"
+                          style={{
+                            backgroundColor: ELITE_COLORS[ach.eliteCategory].bg,
+                            color: ELITE_COLORS[ach.eliteCategory].text,
+                          }}
+                          title={ELITE_LABELS[ach.eliteCategory]}
+                        >
+                          {ELITE_COLORS[ach.eliteCategory].label}
+                        </span>
+                      )}
+                      <div className="flex-1">
+                        <p style={{ whiteSpace: 'pre-wrap' }}>
+                          <span className="font-medium" style={{ color: theme.colors.accent }}>Challenge: </span>
+                          {ach.challenge}
+                        </p>
+                        <p style={{ whiteSpace: 'pre-wrap' }}>
+                          <span className="font-medium" style={{ color: theme.colors.accent }}>Action: </span>
+                          {ach.action}
+                        </p>
+                        <p style={{ whiteSpace: 'pre-wrap' }}>
+                          <span className="font-medium" style={{ color: theme.colors.accent }}>Result: </span>
+                          {ach.result}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         ))}
       </div>

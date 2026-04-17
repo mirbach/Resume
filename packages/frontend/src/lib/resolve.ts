@@ -61,6 +61,13 @@ export function resolveResume(data: ResumeData, lang: Language): ResolvedResume 
       description: resolve(p.description, lang),
       technologies: p.technologies,
       link: p.link,
+      achievements: (p.achievements ?? []).map((ach) => ({
+        id: ach.id,
+        challenge: resolve(ach.challenge, lang),
+        action: resolve(ach.action, lang),
+        result: resolve(ach.result, lang),
+        eliteCategory: ach.eliteCategory,
+      })),
     })),
     products: data.products.map((p) => ({
       id: p.id,

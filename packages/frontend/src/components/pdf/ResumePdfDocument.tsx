@@ -427,12 +427,36 @@ function SectionProjects({ resume, styles }: { resume: ResolvedResume; styles: R
             <Text style={styles.projName}>{proj.name}</Text>
             {proj.link && <Text style={styles.projLink}>{proj.link}</Text>}
           </View>
-          <Text style={styles.projDesc}>{proj.description}</Text>
-          <View style={[styles.tagRow, { marginTop: 2 }]}>
-            {proj.technologies.map((t, i) => (
-              <Text key={i} style={styles.techTag}>{t}</Text>
-            ))}
-          </View>
+          {!!proj.description && <Text style={styles.projDesc}>{proj.description}</Text>}
+          {proj.technologies.length > 0 && (
+            <View style={[styles.tagRow, { marginTop: 2 }]}>
+              {proj.technologies.map((t, i) => (
+                <Text key={i} style={styles.techTag}>{t}</Text>
+              ))}
+            </View>
+          )}
+          {proj.achievements.map((ach) => (
+            <View key={ach.id} style={[styles.achievement, { flexDirection: 'row' }]}>
+              {ach.eliteCategory && (
+                <View style={[styles.eliteBadge, { backgroundColor: ELITE_BG[ach.eliteCategory], color: ELITE_COLOR[ach.eliteCategory] }]}>
+                  <Text style={{ fontSize: 7, fontWeight: 700, textAlign: 'center', color: ELITE_COLOR[ach.eliteCategory!] }}>
+                    {ELITE_LABELS[ach.eliteCategory]}
+                  </Text>
+                </View>
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={styles.achText}>
+                  <Text style={styles.achLabel}>Challenge: </Text>{ach.challenge}
+                </Text>
+                <Text style={styles.achText}>
+                  <Text style={styles.achLabel}>Action: </Text>{ach.action}
+                </Text>
+                <Text style={styles.achText}>
+                  <Text style={styles.achLabel}>Result: </Text>{ach.result}
+                </Text>
+              </View>
+            </View>
+          ))}
         </View>
       ))}
     </View>

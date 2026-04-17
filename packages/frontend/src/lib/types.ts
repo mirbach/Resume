@@ -72,6 +72,7 @@ export interface ProjectEntry {
   description: BilingualText;
   technologies: string[];
   link?: string;
+  achievements: Achievement[];
 }
 
 export interface ProductEntry {
@@ -252,12 +253,21 @@ export interface ResolvedLanguageEntry {
   level: string;
 }
 
+export interface ResolvedProjectAchievement {
+  id: string;
+  challenge: string;
+  action: string;
+  result: string;
+  eliteCategory?: EliteCategory;
+}
+
 export interface ResolvedProject {
   id: string;
   name: string;
   description: string;
   technologies: string[];
   link?: string;
+  achievements: ResolvedProjectAchievement[];
 }
 
 export interface ResolvedProduct {

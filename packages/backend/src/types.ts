@@ -72,6 +72,7 @@ export interface ProjectEntry {
   description: BilingualText;
   technologies: string[];
   link?: string;
+  achievements: Achievement[];
 }
 
 export interface ProductEntry {

@@ -266,7 +266,24 @@
         "Azure",
         "GCP"
       ],
-      "link": "github.com/maxmustermann/clouddeploy"
+      "link": "github.com/maxmustermann/clouddeploy",
+      "achievements": [
+        {
+          "id": "247c2ec4-bcab-405d-ad2d-02ddcfb92898",
+          "challenge": {
+            "en": "",
+            "de": ""
+          },
+          "action": {
+            "en": "",
+            "de": ""
+          },
+          "result": {
+            "en": "",
+            "de": ""
+          }
+        }
+      ]
     },
     {
       "id": "proj-2",
@@ -281,7 +298,8 @@
         "CRDTs",
         "IndexedDB"
       ],
-      "link": "github.com/maxmustermann/realtimesync"
+      "link": "github.com/maxmustermann/realtimesync",
+      "achievements": []
     }
   ],
   "products": [
