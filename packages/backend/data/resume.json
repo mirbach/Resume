@@ -98,24 +98,7 @@
         "en": "Berlin, Germany",
         "de": "Berlin, Deutschland"
       },
-      "achievements": [
-        {
-          "id": "ach-3",
-          "challenge": {
-            "en": "E-commerce platform handling only 100 concurrent users with frequent crashes during peak traffic",
-            "de": "E-Commerce-Plattform konnte nur 100 gleichzeitige Nutzer bedienen und stürzte bei Spitzenverkehr häufig ab"
-          },
-          "action": {
-            "en": "Redesigned the data layer with Redis caching, implemented database query optimization, and introduced auto-scaling on AWS",
-            "de": "Redesignte die Datenschicht mit Redis-Caching, optimierte Datenbankabfragen und führte Auto-Scaling auf AWS ein"
-          },
-          "result": {
-            "en": "Platform now supports 10,000+ concurrent users with sub-200ms response times, contributing to 150% revenue increase",
-            "de": "Plattform unterstützt jetzt über 10.000 gleichzeitige Nutzer mit Antwortzeiten unter 200ms, was zu einer Umsatzsteigerung von 150% beitrug"
-          },
-          "eliteCategory": "impact"
-        }
-      ]
+      "achievements": []
     },
     {
       "id": "0ccf443c-85c8-4895-9bce-bbf96cf3917b",
@@ -132,23 +115,24 @@
         "en": "",
         "de": ""
       },
-      "achievements": [
-        {
-          "id": "82e2e2b6-8a06-4e8e-b5ee-3f123268c951",
-          "challenge": {
-            "en": "",
-            "de": ""
-          },
-          "action": {
-            "en": "",
-            "de": ""
-          },
-          "result": {
-            "en": "",
-            "de": ""
-          }
-        }
-      ]
+      "achievements": []
+    },
+    {
+      "id": "a6000d6a-6a48-490d-9b25-807f80d0b6a3",
+      "company": "",
+      "role": {
+        "en": "",
+        "de": ""
+      },
+      "period": {
+        "en": "",
+        "de": ""
+      },
+      "location": {
+        "en": "",
+        "de": ""
+      },
+      "achievements": []
     }
   ],
   "education": [

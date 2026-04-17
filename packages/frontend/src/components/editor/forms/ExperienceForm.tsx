@@ -33,7 +33,7 @@ function newExperience(): ExperienceEntry {
     role: { en: '', de: '' },
     period: { en: '', de: '' },
     location: { en: '', de: '' },
-    achievements: [newAchievement()],
+    achievements: [],
   };
 }
 
