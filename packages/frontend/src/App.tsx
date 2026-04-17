@@ -418,6 +418,8 @@ export default function App() {
             <Palette size={14} /> Company
           </button>
           <LanguageSwitcher language={language} onChange={setLanguage} />
+          <PrintButton />
+          <PdfExportButton resume={resolved} theme={theme} language={language} />
           <button
             onClick={() => resumeData && exportResumeJson(resumeData)}
             aria-label="Export resume JSON"
