@@ -8,7 +8,7 @@ interface Props {
 
 export default function SummaryForm({ data, onChange }: Props) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pt-4">
       <h3 className="text-lg font-semibold text-gray-900">Professional Summary</h3>
       <BilingualField
         label="Summary"

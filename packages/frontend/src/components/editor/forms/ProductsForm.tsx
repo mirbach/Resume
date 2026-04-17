@@ -72,7 +72,7 @@ export default function ProductsForm({ data, onChange }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="sticky top-0 z-10 flex items-center justify-between pt-4 bg-gray-50 dark:bg-gray-900 pb-3">
         <h3 className="text-lg font-semibold text-gray-900">Products</h3>
         <button
           onClick={addEntry}

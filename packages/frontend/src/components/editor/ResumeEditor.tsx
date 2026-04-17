@@ -153,7 +153,7 @@ export default function ResumeEditor({ data, onChange }: Props) {
       </div>
 
       {/* Form content */}
-      <div className="editor-form flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">{renderForm()}</div>
+      <div className="editor-form flex-1 overflow-y-auto px-4 pb-4 bg-gray-50 dark:bg-gray-900">{renderForm()}</div>
     </div>
   );
 }

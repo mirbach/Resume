@@ -337,6 +337,19 @@
           "de": "Entwickelte Self-Service-Onboarding, das die Kundeneinrichtung von 2 Wochen auf 2 Stunden reduzierte"
         }
       ]
+    },
+    {
+      "id": "dfe4b4f5-a260-4516-a53b-9e2e70da9e14",
+      "name": "",
+      "description": {
+        "en": "",
+        "de": ""
+      },
+      "role": {
+        "en": "",
+        "de": ""
+      },
+      "highlights": []
     }
   ],
   "references": [
