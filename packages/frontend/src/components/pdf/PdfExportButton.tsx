@@ -48,7 +48,9 @@ export default function PdfExportButton({ resume, theme, language }: Props) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `resume-${theme.name}-${language}.pdf`;
+      a.download = language === 'de'
+        ? 'CV-AndreasMirbach-DE.pdf'
+        : 'CV-AndreasMirbach-EN.pdf';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
