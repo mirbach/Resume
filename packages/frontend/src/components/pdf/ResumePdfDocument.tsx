@@ -189,6 +189,7 @@ function createStyles(theme: ResumeTheme) {
     langName: { fontFamily: headingFontBold, color: theme.colors.heading },
     langLevel: { color: theme.colors.secondary },
     projName: { fontSize: 10, fontFamily: headingFontBold, color: theme.colors.heading },
+    entryCompany: { fontSize: 9, fontFamily: headingFont, color: theme.colors.secondary },
     projLink: { fontSize: 8, color: theme.colors.accent },
     projDesc: { fontSize: 9, marginTop: 1 },
     techTag: {
@@ -427,7 +428,10 @@ function SectionProjects({ resume, styles }: { resume: ResolvedResume; styles: R
       {resume.projects.map((proj) => (
         <View key={proj.id} style={{ marginBottom: 6 }}>
           <View style={styles.entryHeader}>
-            <Text style={styles.projName}>{proj.name}</Text>
+            <Text style={styles.projName}>
+              {proj.name}
+              {proj.company ? <Text style={styles.entryCompany}> @ {proj.company}</Text> : null}
+            </Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {!!proj.period && <Text style={styles.entryPeriod}>{proj.period}</Text>}
               {!!proj.link && <Text style={styles.projLink}>{proj.link}</Text>}

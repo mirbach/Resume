@@ -318,7 +318,19 @@
         "IndexedDB"
       ],
       "link": "github.com/maxmustermann/realtimesync",
-      "achievements": []
+      "achievements": [],
+      "company": "Bla"
+    },
+    {
+      "id": "ecee82e8-8de7-4782-9482-f2a994dd1e4e",
+      "name": "Sentinel Improvement",
+      "description": {
+        "en": "",
+        "de": ""
+      },
+      "technologies": [],
+      "achievements": [],
+      "company": "Adidas"
     }
   ],
   "products": [

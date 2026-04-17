@@ -69,6 +69,7 @@ export interface LanguageEntry {
 export interface ProjectEntry {
   id: string;
   name: string;
+  company?: string;
   description: BilingualText;
   technologies: string[];
   link?: string;

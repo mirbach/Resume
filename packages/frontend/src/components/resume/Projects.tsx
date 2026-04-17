@@ -35,6 +35,9 @@ export default function Projects({ data, theme }: Props) {
             <div className="flex items-baseline justify-between">
               <h3 className="font-semibold text-sm" style={{ color: theme.colors.heading }}>
                 {proj.name}
+                {proj.company && (
+                  <span className="font-normal" style={{ color: theme.colors.secondary }}> @ {proj.company}</span>
+                )}
               </h3>
               <div className="flex items-baseline gap-3">
                 {proj.period && (

@@ -137,7 +137,7 @@ export default function ProjectsForm({ data, onChange }: Props) {
             <div className="border-t border-gray-100 px-4 py-4 space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <label className="block text-sm font-medium text-gray-700">Project Name</label>
                   <input
                     type="text"
                     className={inputClasses}
@@ -147,15 +147,25 @@ export default function ProjectsForm({ data, onChange }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Link (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700">Company (optional)</label>
                   <input
                     type="text"
                     className={inputClasses}
-                    value={entry.link || ''}
-                    onChange={(e) => updateEntry(entryIndex, { ...entry, link: e.target.value || undefined })}
-                    placeholder="github.com/..."
+                    value={entry.company || ''}
+                    placeholder="Client or employer"
+                    onChange={(e) => updateEntry(entryIndex, { ...entry, company: e.target.value || undefined })}
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Link (optional)</label>
+                <input
+                  type="text"
+                  className={inputClasses}
+                  value={entry.link || ''}
+                  onChange={(e) => updateEntry(entryIndex, { ...entry, link: e.target.value || undefined })}
+                  placeholder="github.com/..."
+                />
               </div>
 
               <BilingualField
