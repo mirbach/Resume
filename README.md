@@ -148,7 +148,7 @@ Themes control colours, fonts, and page margins. Each theme can carry a consulti
 
 Auth is opt-in. When `auth.enabled = true` in `settings.json`, all write API routes require a Bearer token. Configure your OIDC provider details in Settings → Authentication. The frontend handles the PKCE flow and stores the token in `sessionStorage`.
 
-> **Note:** Full JWT signature validation (JWKS fetch) is not yet implemented — the middleware currently checks token presence only.
+The middleware validates JWT signatures via the provider's JWKS endpoint (discovered automatically from `authority/.well-known/openid-configuration`). It verifies the issuer, audience, expiry, and cryptographic signature using the [`jose`](https://github.com/panva/jose) library.
 
 ---
 
