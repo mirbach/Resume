@@ -1,6 +1,6 @@
 import type { SkillCategory, BilingualText } from '../../../lib/types';
 import BilingualField from '../BilingualField';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, Trash2, X, Pencil, Check } from 'lucide-react';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,6 +21,8 @@ export default function SkillsForm({ data, onChange }: Props) {
   const [dragOverCat, setDragOverCat] = useState<number | null>(null);
   const [dragOverItem, setDragOverItem] = useState<DragSkill | null>(null);
   const [isCopyMode, setIsCopyMode] = useState(false);
+  const [editingSkill, setEditingSkill] = useState<DragSkill | null>(null);
+  const [editValues, setEditValues] = useState<BilingualText>({ en: '', de: '' });
 
   function addCategory() {
     onChange([...data, { id: uuidv4(), category: { en: '', de: '' }, items: [] }]);
@@ -60,6 +62,23 @@ export default function SkillsForm({ data, onChange }: Props) {
       items: updated[catIndex].items.filter((_, i) => i !== skillIndex),
     };
     onChange(updated);
+    if (editingSkill?.catIndex === catIndex && editingSkill?.skillIndex === skillIndex) {
+      setEditingSkill(null);
+    }
+  }
+
+  function startEdit(catIndex: number, skillIndex: number) {
+    const item = data[catIndex].items[skillIndex];
+    setEditingSkill({ catIndex, skillIndex });
+    setEditValues(typeof item === 'string' ? { en: item, de: '' } : { en: item.en, de: item.de });
+  }
+
+  function saveEdit() {
+    if (!editingSkill) return;
+    const updated = data.map((cat) => ({ ...cat, items: [...cat.items] }));
+    updated[editingSkill.catIndex].items[editingSkill.skillIndex] = { en: editValues.en.trim(), de: editValues.de.trim() };
+    onChange(updated);
+    setEditingSkill(null);
   }
 
   function handleSkillDragStart(catIndex: number, skillIndex: number, lang: 'en' | 'de') {
@@ -228,6 +247,7 @@ export default function SkillsForm({ data, onChange }: Props) {
                       if (!text) return null;
                       const isBeingDragged = dragging?.catIndex === catIndex && dragging?.skillIndex === skillIndex;
                       const isDropTarget = dragOverItem?.catIndex === catIndex && dragOverItem?.skillIndex === skillIndex;
+                      const isEditing = editingSkill?.catIndex === catIndex && editingSkill?.skillIndex === skillIndex;
                       return (
                         <span
                           key={skillIndex}
@@ -238,7 +258,9 @@ export default function SkillsForm({ data, onChange }: Props) {
                           onDragLeave={() => { setDragOverItem(null); setIsCopyMode(false); }}
                           onDrop={(e) => handleChipDrop(e, catIndex, skillIndex, lang)}
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm cursor-grab active:cursor-grabbing select-none transition-all ${
-                            isBeingDragged
+                            isEditing
+                              ? 'bg-blue-100 dark:bg-blue-800/60 text-blue-600 ring-2 ring-blue-400 ring-offset-1'
+                              : isBeingDragged
                               ? 'opacity-40 bg-blue-100 dark:bg-blue-800/40 text-blue-400'
                               : isDropTarget && isCopyMode
                               ? 'bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-300 ring-2 ring-green-400 ring-offset-1'
@@ -249,9 +271,16 @@ export default function SkillsForm({ data, onChange }: Props) {
                         >
                           <span>{text}</span>
                           <button
+                            onClick={(e) => { e.stopPropagation(); startEdit(catIndex, skillIndex); }}
+                            aria-label="Edit skill"
+                            className="text-blue-400 hover:text-blue-600 ml-0.5"
+                          >
+                            <Pencil size={11} />
+                          </button>
+                          <button
                             onClick={() => removeSkill(catIndex, skillIndex)}
                             aria-label="Remove skill"
-                            className="text-blue-400 hover:text-blue-600 ml-0.5"
+                            className="text-blue-400 hover:text-blue-600"
                           >
                             <X size={12} />
                           </button>
@@ -262,6 +291,37 @@ export default function SkillsForm({ data, onChange }: Props) {
                 </div>
               ))}
             </div>
+            {editingSkill?.catIndex === catIndex && (
+              <div className="grid grid-cols-2 gap-2 mb-2 p-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                <input
+                  autoFocus
+                  type="text"
+                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                  value={editValues.en}
+                  onChange={(e) => setEditValues({ ...editValues, en: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveEdit(); } if (e.key === 'Escape') setEditingSkill(null); }}
+                  placeholder="EN"
+                  aria-label="Edit skill (English)"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                    value={editValues.de}
+                    onChange={(e) => setEditValues({ ...editValues, de: e.target.value })}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveEdit(); } if (e.key === 'Escape') setEditingSkill(null); }}
+                    placeholder="DE"
+                    aria-label="Edit skill (German)"
+                  />
+                  <button onClick={saveEdit} aria-label="Save skill" className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 shrink-0">
+                    <Check size={14} />
+                  </button>
+                  <button onClick={() => setEditingSkill(null)} aria-label="Cancel edit" className="rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 shrink-0">
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="text"
