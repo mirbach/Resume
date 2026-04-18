@@ -12,7 +12,7 @@ import PdfExportButton from './components/pdf/PdfExportButton';
 import PrintButton from './components/pdf/PrintButton';
 import SettingsPage from './components/SettingsPage';
 import HelpPage from './components/HelpPage';
-import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, HelpCircle, Moon, Sun, Pencil, ArrowLeft, X, LogOut, Download, Upload } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, Loader2, Palette, Settings, HelpCircle, Moon, Sun, Pencil, ArrowLeft, X, LogOut, Download, Upload, Eye, EyeOff } from 'lucide-react';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 type AppMode = 'preview' | 'editor';
@@ -66,6 +66,7 @@ export default function App() {
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(true);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -452,6 +453,14 @@ export default function App() {
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button
+            aria-label={showPreview ? 'Hide preview' : 'Show preview'}
+            title={showPreview ? 'Hide preview' : 'Show preview'}
+            onClick={() => setShowPreview((v) => !v)}
+            className={`text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 ${showPreview ? '' : 'text-blue-600 dark:text-blue-400'}`}
+          >
+            {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+          <button
             onClick={() => setShowHelp(true)}
             aria-label="Open frameworks guide"
             className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -489,12 +498,14 @@ export default function App() {
         <>
           {/* Split pane */}
           <div className="flex flex-1 overflow-hidden">
-            <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className={`${showPreview ? 'w-1/2' : 'w-full'} border-r border-gray-200 dark:border-gray-700 overflow-hidden transition-all`}>
               <ResumeEditor data={resumeData} onChange={handleResumeChange} lang={language} />
             </div>
-            <div className="w-1/2 overflow-y-auto p-4 bg-gray-200 dark:bg-gray-700">
-              <ScaledPreview resume={resolved} theme={theme} lang={language} />
-            </div>
+            {showPreview && (
+              <div className="w-1/2 overflow-y-auto p-4 bg-gray-200 dark:bg-gray-700">
+                <ScaledPreview resume={resolved} theme={theme} lang={language} />
+              </div>
+            )}
           </div>
 
           {showThemeEditor && (
