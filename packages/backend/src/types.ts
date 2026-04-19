@@ -118,6 +118,10 @@ export interface ThemeColors {
   text: string;
   background: string;
   heading: string;
+  skillTagBg?: string;
+  skillTagText?: string;
+  techTagBg?: string;
+  techTagText?: string;
 }
 
 export interface ThemeFonts {

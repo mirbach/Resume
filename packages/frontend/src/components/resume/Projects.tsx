@@ -66,8 +66,8 @@ export default function Projects({ data, theme, lang }: Props) {
                     key={i}
                     className="rounded px-1.5 py-0.5 text-xs"
                     style={{
-                      backgroundColor: lightTint(theme.colors.accent),
-                      color: theme.colors.accent,
+                      backgroundColor: theme.colors.techTagBg ?? lightTint(theme.colors.accent),
+                      color: theme.colors.techTagText ?? theme.colors.accent,
                     }}
                   >
                     {tech}

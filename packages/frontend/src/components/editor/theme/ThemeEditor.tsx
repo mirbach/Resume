@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import type { ResumeTheme, ThemeColors, ThemeFonts, ThemeLayout, LayoutStyle, HeaderStyle, ResumeSection, PageMargins } from '../../../lib/types';
 import { getTheme, saveTheme, createTheme, deleteTheme, getThemes, uploadFile } from '../../../lib/api';
 import type { ThemeListItem } from '../../../lib/types';
-import { Save, Plus, Trash2, GripVertical, Loader2, Upload, X } from 'lucide-react';
+import { Save, Plus, Trash2, GripVertical, Loader2, Upload, X, RotateCcw } from 'lucide-react';
+import { lightTint } from '../../../lib/colorUtils';
 
 interface Props {
   currentTheme: string;
@@ -294,9 +295,19 @@ export default function ThemeEditor({ currentTheme, onThemeChange, onClose }: Pr
 
           {/* Colors */}
           <fieldset>
-            <legend className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Colors</legend>
+            <legend className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              <span>Colors</span>
+              <button
+                type="button"
+                aria-label="Reset colors to defaults"
+                onClick={() => updateColors(DEFAULT_THEME.colors)}
+                className="flex items-center gap-1 text-xs font-normal text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <RotateCcw size={12} /> Reset
+              </button>
+            </legend>
             <div className="grid grid-cols-3 gap-3">
-              {(Object.keys(theme.colors) as (keyof ThemeColors)[]).map((key) => (
+              {(Object.keys(theme.colors) as (keyof ThemeColors)[]).filter((key) => !['skillTagBg', 'skillTagText', 'techTagBg', 'techTagText'].includes(key)).map((key) => (
                 <label key={key} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
                   <input
                     type="color"
@@ -307,6 +318,82 @@ export default function ThemeEditor({ currentTheme, onThemeChange, onClose }: Pr
                   <span className="capitalize">{key}</span>
                 </label>
               ))}
+            </div>
+          </fieldset>
+
+          {/* Tag Bubble Colors */}
+          <fieldset>
+            <legend className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Tag Bubble Colors</legend>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              Override the auto-computed colors for skill tags and project tech badges. Reset to derive from Primary / Accent.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">Skill Bubbles</p>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <input
+                      type="color"
+                      value={theme.colors.skillTagBg ?? lightTint(theme.colors.primary)}
+                      onChange={(e) => updateColors({ skillTagBg: e.target.value })}
+                      className="h-8 w-8 rounded border cursor-pointer"
+                    />
+                    <span>BG</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <input
+                      type="color"
+                      value={theme.colors.skillTagText ?? theme.colors.primary}
+                      onChange={(e) => updateColors({ skillTagText: e.target.value })}
+                      className="h-8 w-8 rounded border cursor-pointer"
+                    />
+                    <span>Text</span>
+                  </label>
+                  {(theme.colors.skillTagBg || theme.colors.skillTagText) && (
+                    <button
+                      aria-label="Reset skill bubble colors to defaults"
+                      onClick={() => updateColors({ skillTagBg: undefined, skillTagText: undefined })}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                      title="Reset to default"
+                    >
+                      <RotateCcw size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">Tech Tags (Projects)</p>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <input
+                      type="color"
+                      value={theme.colors.techTagBg ?? lightTint(theme.colors.accent)}
+                      onChange={(e) => updateColors({ techTagBg: e.target.value })}
+                      className="h-8 w-8 rounded border cursor-pointer"
+                    />
+                    <span>BG</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <input
+                      type="color"
+                      value={theme.colors.techTagText ?? theme.colors.accent}
+                      onChange={(e) => updateColors({ techTagText: e.target.value })}
+                      className="h-8 w-8 rounded border cursor-pointer"
+                    />
+                    <span>Text</span>
+                  </label>
+                  {(theme.colors.techTagBg || theme.colors.techTagText) && (
+                    <button
+                      aria-label="Reset tech tag colors to defaults"
+                      onClick={() => updateColors({ techTagBg: undefined, techTagText: undefined })}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                      title="Reset to default"
+                    >
+                      <RotateCcw size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </fieldset>
 

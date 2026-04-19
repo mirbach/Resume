@@ -36,10 +36,10 @@ export default function Skills({ data, theme, lang }: Props) {
               {cat.items.map((item, i) => (
                 <span
                   key={i}
-                  className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                  className="rounded px-2.5 py-0.5 text-xs font-medium"
                   style={{
-                    backgroundColor: lightTint(theme.colors.primary),
-                    color: theme.colors.primary,
+                    backgroundColor: theme.colors.skillTagBg ?? lightTint(theme.colors.primary),
+                    color: theme.colors.skillTagText ?? theme.colors.primary,
                   }}
                 >
                   {item}

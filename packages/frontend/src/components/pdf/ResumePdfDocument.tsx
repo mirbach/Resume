@@ -170,8 +170,10 @@ function createStyles(theme: ResumeTheme) {
     skillCategory: { marginBottom: 4 },
     skillCatName: { fontSize: 9, fontFamily: headingFontBold, color: theme.colors.heading, marginBottom: 2 },
     skillTag: {
-      fontSize: 8, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 8,
-      backgroundColor: lightTint(theme.colors.primary), color: theme.colors.primary, marginRight: 4, marginBottom: 2,
+      fontSize: 8, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 3,
+      backgroundColor: theme.colors.skillTagBg ?? lightTint(theme.colors.primary),
+      color: theme.colors.skillTagText ?? theme.colors.primary,
+      marginRight: 4, marginBottom: 2,
     },
     tagRow: { flexDirection: 'row', flexWrap: 'wrap' },
     certRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
@@ -188,7 +190,8 @@ function createStyles(theme: ResumeTheme) {
     projDesc: { fontSize: 9, marginTop: 1 },
     techTag: {
       fontSize: 7, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 3,
-      backgroundColor: lightTint(theme.colors.accent), color: theme.colors.accent,
+      backgroundColor: theme.colors.techTagBg ?? lightTint(theme.colors.accent),
+      color: theme.colors.techTagText ?? theme.colors.accent,
       marginRight: 3, marginBottom: 2,
     },
     prodName: { fontSize: 10, fontFamily: headingFontBold, color: theme.colors.heading },
