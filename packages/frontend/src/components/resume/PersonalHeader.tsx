@@ -61,24 +61,48 @@ export default function PersonalHeader({ data, theme }: Props) {
               </span>
             )}
             {data.github && (
-              <span className="flex items-center gap-1">
+              <a
+                href={data.github.startsWith('http') ? data.github : `https://${data.github}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:underline"
+                style={{ color: theme.colors.secondary }}
+              >
                 <GitFork size={14} /> {data.github}
-              </span>
+              </a>
             )}
             {data.linkedin && (
-              <span className="flex items-center gap-1">
+              <a
+                href={data.linkedin.startsWith('http') ? data.linkedin : `https://${data.linkedin}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:underline"
+                style={{ color: theme.colors.secondary }}
+              >
                 <Briefcase size={14} /> {data.linkedin}
-              </span>
+              </a>
             )}
             {data.website && (
-              <span className="flex items-center gap-1">
+              <a
+                href={data.website.startsWith('http') ? data.website : `https://${data.website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:underline"
+                style={{ color: theme.colors.secondary }}
+              >
                 <Globe size={14} /> {data.website}
-              </span>
+              </a>
             )}
             {theme.companyWebsite && (
-              <span className="flex items-center gap-1">
+              <a
+                href={theme.companyWebsite.startsWith('http') ? theme.companyWebsite : `https://${theme.companyWebsite}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:underline"
+                style={{ color: theme.colors.secondary }}
+              >
                 <Globe size={14} /> {theme.companyWebsite}
-              </span>
+              </a>
             )}
           </div>
         </div>
