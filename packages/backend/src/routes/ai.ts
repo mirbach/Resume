@@ -153,8 +153,8 @@ Result: ${result || '(empty)'}`;
     const parsed = JSON.parse(raw) as CarReviewResponse;
     return res.json({ success: true, data: parsed });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'AI review failed';
-    return res.status(500).json({ success: false, error: message });
+    console.error('[ai] Review error:', err);
+    return res.status(500).json({ success: false, error: 'AI review failed. Check server logs for details.' });
   }
 });
 

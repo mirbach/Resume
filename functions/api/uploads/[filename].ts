@@ -6,7 +6,6 @@ const MIME_FROM_EXT: Record<string, string> = {
   png: 'image/png',
   gif: 'image/gif',
   webp: 'image/webp',
-  svg: 'image/svg+xml',
 };
 
 // GET /api/uploads/:filename
@@ -34,6 +33,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params }) => {
     return new Response(bytes, {
       headers: {
         'Content-Type': mime,
+        'Content-Disposition': `inline; filename="${filename}"`,
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });

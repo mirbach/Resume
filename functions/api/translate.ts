@@ -14,6 +14,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     if (!['en', 'de'].includes(from) || !['en', 'de'].includes(to)) {
       return err('Unsupported language. Only "en" and "de" are supported.', 400);
     }
+    // Limit text size to prevent API key exhaustion (A04)
+    if (typeof text !== 'string' || text.length > 10_000) {
+      return err('Text exceeds maximum allowed length of 10,000 characters.', 400);
+    }
 
     const raw = await env.RESUME_KV.get('settings');
     const settings = raw ? JSON.parse(raw) as Record<string, unknown> : null;
@@ -40,8 +44,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       if (response.status === 403) {
         return err('Invalid DeepL API key.', 400);
       }
-      const body = await response.text();
-      return err(`DeepL error (${response.status}): ${body}`);
+      return err('Translation service error. Please try again later.');
     }
 
     const data = await response.json() as { translations: { text: string }[] };

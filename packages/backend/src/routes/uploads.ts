@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { readdirSync, unlinkSync } from 'fs';
 import { getDataPath } from '../lib/storage.js';
 
 const UPLOADS_DIR = getDataPath('uploads');
@@ -11,17 +11,38 @@ const UPLOADS_DIR = getDataPath('uploads');
 const ALLOWED_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
+/**
+ * Remove any previous file with the given base name (photo or logo) regardless
+ * of extension, so each new upload replaces the old one instead of accumulating
+ * files on disk.
+ */
+function removePrevious(baseName: string): void {
+  try {
+    const existing = readdirSync(UPLOADS_DIR);
+    for (const f of existing) {
+      if (f.startsWith(`${baseName}.`)) {
+        unlinkSync(path.join(UPLOADS_DIR, f));
+      }
+    }
+  } catch {
+    // uploads dir may not exist yet on first run — ignore
+  }
+}
+
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, UPLOADS_DIR);
   },
-  filename: (_req, file, cb) => {
+  filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     if (!ALLOWED_EXTS.includes(ext)) {
       cb(new Error('Invalid file type'), '');
       return;
     }
-    cb(null, `${uuidv4()}${ext}`);
+    // Use a fixed name per upload type so the new file replaces the old one
+    const type = req.params.type === 'logo' ? 'logo' : 'photo';
+    removePrevious(type);
+    cb(null, `${type}${ext}`);
   },
 });
 
@@ -39,18 +60,13 @@ const upload = multer({
 
 const router = Router();
 
-// POST /api/upload/photo - upload a profile photo
-router.post('/photo', upload.single('file'), (req: Request, res: Response) => {
-  if (!req.file) {
-    res.status(400).json({ success: false, error: 'No file uploaded' });
+// POST /api/upload/:type - upload a photo or logo (replaces any previous file)
+router.post('/:type', upload.single('file'), (req: Request, res: Response) => {
+  const type = req.params.type;
+  if (type !== 'photo' && type !== 'logo') {
+    res.status(400).json({ success: false, error: 'Upload type must be "photo" or "logo"' });
     return;
   }
-  const filePath = `/api/uploads/${req.file.filename}`;
-  res.json({ success: true, data: { path: filePath, filename: req.file.filename } });
-});
-
-// POST /api/upload/logo - upload a company logo
-router.post('/logo', upload.single('file'), (req: Request, res: Response) => {
   if (!req.file) {
     res.status(400).json({ success: false, error: 'No file uploaded' });
     return;
@@ -69,6 +85,8 @@ router.get('/:filename', (req: Request, res: Response) => {
     res.status(403).json({ success: false, error: 'Access denied' });
     return;
   }
+  // Set Content-Disposition to prevent browsers from executing unexpected content (A03)
+  res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
   res.sendFile(filePath);
 });
 

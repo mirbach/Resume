@@ -1,14 +1,26 @@
 import { type Env, err, authGuard, arrayBufferToBase64 } from '../../_shared/helpers';
 
-const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+// SVG excluded: can contain embedded scripts (stored XSS). (A03)
+const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/gif': '.gif',
+  'image/webp': '.webp',
+};
+
+const KNOWN_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
 // POST /api/upload/photo  and  POST /api/upload/logo
-// The [type] segment captures "photo" or "logo" — both behave identically.
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+// Uses a fixed filename per type so new uploads replace old ones.
+export const onRequestPost: PagesFunction<Env> = async ({ request, env, params }) => {
   const denied = await authGuard(request, env);
   if (denied) return denied;
+
+  const type = Array.isArray(params.type) ? params.type[0] : params.type;
+  if (type !== 'photo' && type !== 'logo') return err('Upload type must be "photo" or "logo"', 400);
 
   try {
     const formData = await request.formData();
@@ -17,26 +29,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     if (!file) return err('No file uploaded', 400);
     if (!ALLOWED_MIME.includes(file.type)) return err('Invalid file type', 400);
 
-    // Derive extension from MIME type
-    const mimeToExt: Record<string, string> = {
-      'image/jpeg': '.jpg',
-      'image/png': '.png',
-      'image/gif': '.gif',
-      'image/webp': '.webp',
-      'image/svg+xml': '.svg',
-    };
-    const ext = mimeToExt[file.type] ?? '.jpg';
-
-    if (!ALLOWED_EXT.includes(ext)) return err('Invalid file type', 400);
+    const ext = MIME_TO_EXT[file.type] ?? '.jpg';
 
     const buffer = await file.arrayBuffer();
     if (buffer.byteLength > MAX_SIZE) return err('File too large (max 5 MB)', 400);
 
+    // Delete any previous upload for this type (different extension)
+    for (const e of KNOWN_EXTS) {
+      await env.RESUME_KV.delete(`upload:${type}${e}`);
+    }
+
     const base64 = arrayBufferToBase64(buffer);
     const dataUrl = `data:${file.type};base64,${base64}`;
 
-    // Generate a UUID-like filename using the Web Crypto API
-    const filename = `${crypto.randomUUID()}${ext}`;
+    const filename = `${type}${ext}`;
     await env.RESUME_KV.put(`upload:${filename}`, dataUrl);
 
     const path = `/api/uploads/${filename}`;

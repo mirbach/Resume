@@ -46,7 +46,8 @@ router.post('/', async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, error: 'Invalid DeepL API key.' });
       }
       const body = await response.text();
-      return res.status(500).json({ success: false, error: `DeepL error (${response.status}): ${body}` });
+      console.error(`[translate] DeepL error (${response.status}):`, body);
+      return res.status(500).json({ success: false, error: 'Translation service error. Check server logs for details.' });
     }
 
     const data = await response.json() as { translations: { text: string }[] };

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { readJson, writeJson } from '../lib/storage.js';
+import { resumeDataSchema } from '../lib/schemas.js';
 import type { ResumeData } from '../types.js';
 
 const router = Router();
@@ -23,7 +24,13 @@ router.get('/', async (_req: Request, res: Response) => {
 // PUT /api/resume - save the full bilingual resume data
 router.put('/', async (req: Request, res: Response) => {
   try {
-    const data = req.body as ResumeData;
+    const result = resumeDataSchema.safeParse(req.body);
+    if (!result.success) {
+      const issues = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`);
+      res.status(400).json({ success: false, error: `Invalid resume data: ${issues.join('; ')}` });
+      return;
+    }
+    const data = result.data as ResumeData;
     await writeJson('resume.json', data);
     res.json({ success: true, data });
   } catch (error) {

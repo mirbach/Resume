@@ -13,8 +13,8 @@ export function json(data: unknown, status = 200): Response {
   });
 }
 
-export function ok<T>(data: T): Response {
-  return json({ success: true, data });
+export function ok<T>(data: T, keysConfigured?: Record<string, boolean>): Response {
+  return json({ success: true, data, ...(keysConfigured ? { keysConfigured } : {}) });
 }
 
 export function err(message: string, status = 500): Response {

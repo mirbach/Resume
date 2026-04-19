@@ -41,6 +41,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       challenge?: string; action?: string; result?: string; lang?: string;
     };
 
+    // Validate lang enum at runtime (A03)
+    if (lang !== 'en' && lang !== 'de') {
+      return err('Unsupported language. Only "en" and "de" are supported.', 400);
+    }
+    // Limit field sizes to prevent API key exhaustion (A04)
+    const MAX_FIELD = 2_000;
+    if ((challenge?.length ?? 0) > MAX_FIELD || (action?.length ?? 0) > MAX_FIELD || (result?.length ?? 0) > MAX_FIELD) {
+      return err('Each CAR field must not exceed 2,000 characters.', 400);
+    }
+
     if (!challenge?.trim() && !action?.trim() && !result?.trim()) {
       return err('At least one CAR field must have content.', 400);
     }
@@ -78,7 +88,8 @@ Result: ${result || '(empty)'}`;
       });
       if (!res.ok) {
         const body = await res.text();
-        return err(`Google AI error (${res.status}): ${body}`);
+        console.error(`[ai] Google AI error (${res.status}):`, body);
+        return err('AI review failed. Please try again later.');
       }
       const data = await res.json() as { candidates: { content: { parts: { text: string }[] } }[] };
       rawJson = data.candidates[0]?.content?.parts[0]?.text ?? '';
@@ -101,9 +112,8 @@ Result: ${result || '(empty)'}`;
         }),
       });
       if (!res.ok) {
-        const body = await res.text();
         if (res.status === 401 || res.status === 403) return err('Invalid AI API key.', 400);
-        return err(`AI API error (${res.status}): ${body}`);
+        return err('AI review failed. Please try again later.');
       }
       const data = await res.json() as { choices: { message: { content: string } }[] };
       rawJson = data.choices[0]?.message?.content ?? '';
@@ -112,7 +122,7 @@ Result: ${result || '(empty)'}`;
     const parsed = JSON.parse(rawJson);
     return ok(parsed);
   } catch (e) {
-    const message = e instanceof Error ? e.message : 'AI review failed';
-    return err(message);
+    console.error('[ai] Review error:', e);
+    return err('AI review failed. Check server logs for details.');
   }
 };
