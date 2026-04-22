@@ -344,8 +344,12 @@ export default function App() {
     return (
       <div className={`flex h-screen flex-col bg-gray-200 dark:bg-gray-700${darkClass}`}>
         {/* Minimal top bar */}
-        <header className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 shadow-sm flex-shrink-0">
-          <span className="text-base font-semibold text-gray-900 dark:text-white">
+        <header className="relative flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 shadow-sm flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <img src="/logo-192.png" alt="Resume Builder" className="h-7 w-7 rounded-md" />
+            <span className="text-base font-semibold text-gray-900 dark:text-white">Resume Builder</span>
+          </div>
+          <span className="absolute left-1/2 -translate-x-1/2 text-base font-semibold text-gray-900 dark:text-white">
             {resolved.personal.name || 'Resume'}
           </span>
           <div className="flex items-center gap-3">
@@ -407,7 +411,10 @@ export default function App() {
           >
             <ArrowLeft size={18} />
           </button>
-          <h1 className="text-base font-bold text-gray-900 dark:text-white">Resume Builder</h1>
+          <div className="flex items-center gap-2">
+            <img src="/logo-192.png" alt="Resume Builder" className="h-7 w-7 rounded-md" />
+            <h1 className="text-base font-bold text-gray-900 dark:text-white">Resume Builder</h1>
+          </div>
           <div className="flex items-center gap-2 text-sm">
             {saveStatus === 'saving' && (
               <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
