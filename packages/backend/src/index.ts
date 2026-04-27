@@ -14,10 +14,14 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Security headers (A05)
+// This is an API-only server — it never serves HTML, so a maximally
+// restrictive CSP (default-src 'none') is the correct posture.
 app.use(helmet({
-  // CSP is managed by the frontend Vite build; disable the header here
-  // so helmet doesn't conflict with Vite dev server responses.
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'none'"],
+    },
+  },
 }));
 
 // Middleware
@@ -50,11 +54,12 @@ const externalApiLimiter = rateLimit({
   message: { success: false, error: 'Too many requests, please try again later.' },
 });
 
+// Rate limiting must be applied before auth middleware so that brute-force
+// and DoS attempts are dropped before expensive JWT/JWKS verification runs.
+app.use('/api', apiLimiter);
+
 // Auth middleware (only blocks when auth is enabled in settings)
 app.use('/api', authMiddleware);
-
-// Apply general rate limit to all API routes
-app.use('/api', apiLimiter);
 
 // Routes
 app.use('/api/resume', resumeRoutes);
