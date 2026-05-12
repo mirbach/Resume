@@ -20,6 +20,7 @@ A bilingual (EN/DE) consulting resume builder built around the **CAR** (Challeng
 - **Dark mode**
 - **JSON import/export** — back up or restore your resume data
 - **Optional OIDC authentication** — protect the editor behind a generic OIDC provider (e.g. Entra ID, Auth0)
+- **Configurable storage backend** — store resume data, themes, and uploads on the local filesystem, Amazon S3, or Microsoft SharePoint; switch providers from the Settings UI without restarting
 - **Cloudflare Pages + KV deployment** — deploy the frontend to Cloudflare Pages with KV-backed API functions
 
 ---
@@ -31,7 +32,7 @@ A bilingual (EN/DE) consulting resume builder built around the **CAR** (Challeng
 | Frontend | React 18, Vite 6, Tailwind CSS v4 |
 | PDF | @react-pdf/renderer |
 | Backend | Express 5, TypeScript, Node.js |
-| Storage | JSON files on disk (no database) |
+| Storage | Local filesystem / Amazon S3 / Microsoft SharePoint (configurable) |
 | Edge deployment | Cloudflare Pages + Workers + KV |
 | Translation | DeepL API |
 | AI review | OpenAI / xAI Grok / Google Gemini |
@@ -46,7 +47,14 @@ packages/
     src/
       index.ts            Entry point
       types.ts            Shared type definitions
-      lib/storage.ts      JSON file helpers
+      lib/
+        storage.ts          JSON file helpers (settings.json bootstrap)
+        storage-provider.ts IStorageProvider interface
+        get-provider.ts     Provider factory + cache
+        providers/
+          local.ts          Local filesystem provider
+          s3.ts             Amazon S3 provider (@aws-sdk/client-s3)
+          sharepoint.ts     SharePoint via Microsoft Graph API
       middleware/auth.ts  Optional OIDC bearer-token guard
       routes/
         resume.ts         GET/PUT /api/resume
@@ -149,6 +157,46 @@ Themes control colours, fonts, and page margins. Each theme can carry a consulti
 Auth is opt-in. When `auth.enabled = true` in `settings.json`, all write API routes require a Bearer token. Configure your OIDC provider details in Settings → Authentication. The frontend handles the PKCE flow and stores the token in `sessionStorage`.
 
 The middleware validates JWT signatures via the provider's JWKS endpoint (discovered automatically from `authority/.well-known/openid-configuration`). It verifies the issuer, audience, expiry, and cryptographic signature using the [`jose`](https://github.com/panva/jose) library.
+
+---
+
+## Storage
+
+The storage backend is configurable from **Settings → Storage**. Three providers are supported:
+
+| Provider | Use case |
+|---|---|
+| **Local Filesystem** | Default. Resume data and uploads are stored under `packages/backend/data/`. |
+| **Amazon S3** | Store everything in an S3 bucket (or any S3-compatible service such as MinIO). |
+| **Microsoft SharePoint** | Store everything in a SharePoint document library via the Microsoft Graph API. |
+
+Switching providers does **not** migrate existing data — files already on the old provider remain there. `settings.json` itself always stays on the local filesystem regardless of the chosen provider, because it is read before the provider is initialised.
+
+### S3 configuration
+
+| Setting | Description |
+| --- | --- |
+| Bucket Name | Target S3 bucket |
+| Region | AWS region (e.g. `us-east-1`) |
+| Access Key ID | IAM access key |
+| Secret Access Key | IAM secret (stored server-side, never sent to the browser after saving) |
+| Key Prefix | Optional prefix for all object keys (e.g. `resume-builder/`) |
+| Endpoint URL | Optional — override for MinIO or other S3-compatible endpoints |
+
+The IAM user/role needs `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject`, and `s3:ListBucket` on the target bucket.
+
+### SharePoint configuration
+
+| Setting | Description |
+| --- | --- |
+| Tenant ID | Azure AD tenant ID |
+| Client ID | App registration client ID |
+| Client Secret | App registration client secret (stored server-side, never sent to the browser) |
+| SharePoint Site URL | Full URL of the SharePoint site (e.g. `https://contoso.sharepoint.com/sites/mysite`) |
+| Drive Name | Document library name (e.g. `Documents`) |
+| Folder Path | Optional base folder within the library (e.g. `ResumeBuilder`) |
+
+The app registration needs the `Sites.ReadWrite.All` application permission on Microsoft Graph. The backend obtains an OAuth2 token via the client credentials flow; tokens are cached in memory and refreshed automatically before expiry.
 
 ---
 
