@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { readJson, writeJson } from '../lib/storage.js';
+import { invalidateProvider } from '../lib/get-provider.js';
 import type { AppSettings } from '../types.js';
 
 const router = Router();
@@ -15,10 +16,15 @@ const DEFAULTS: AppSettings = {
   },
   translation: { deeplApiKey: '' },
   ai: { provider: 'openai', apiKey: '', model: '' },
+  storage: {
+    provider: 'local',
+    s3: { bucket: '', region: 'us-east-1', accessKeyId: '', secretAccessKey: '', prefix: '', endpoint: '' },
+    sharepoint: { tenantId: '', clientId: '', clientSecret: '', siteUrl: '', driveName: '', folderPath: '' },
+  },
 };
 
 // GET /api/settings
-// Returns settings with API key values stripped — only indicates whether each key is configured.
+// Returns settings with secret values stripped — only indicates whether each is configured.
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const settings = await readJson<AppSettings>('settings.json').catch(() => DEFAULTS);
@@ -26,13 +32,20 @@ router.get('/', async (_req: Request, res: Response) => {
     const keysConfigured = {
       deeplApiKey: !!settings.translation?.deeplApiKey?.trim(),
       aiApiKey: !!settings.ai?.apiKey?.trim(),
+      s3SecretKey: !!settings.storage?.s3?.secretAccessKey?.trim(),
+      sharePointClientSecret: !!settings.storage?.sharepoint?.clientSecret?.trim(),
     };
 
-    // Never send actual key values to the client
     const safe: AppSettings = {
       ...settings,
       translation: { deeplApiKey: '' },
       ai: { ...settings.ai, apiKey: '' },
+      storage: {
+        ...settings.storage,
+        provider: settings.storage?.provider ?? 'local',
+        s3: { ...(settings.storage?.s3 ?? DEFAULTS.storage.s3), secretAccessKey: '' },
+        sharepoint: { ...(settings.storage?.sharepoint ?? DEFAULTS.storage.sharepoint), clientSecret: '' },
+      },
     };
 
     res.json({ success: true, data: safe, keysConfigured });
@@ -42,7 +55,7 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 // PUT /api/settings
-// Merges with existing settings — key fields are only overwritten if a non-empty value is provided.
+// Merges with existing — secrets are only overwritten if a non-empty value is provided.
 router.put('/', async (req: Request, res: Response) => {
   try {
     const incoming = req.body as AppSettings;
@@ -61,19 +74,41 @@ router.put('/', async (req: Request, res: Response) => {
           ? incoming.ai.apiKey
           : existing.ai?.apiKey ?? '',
       },
+      storage: {
+        provider: incoming.storage?.provider ?? existing.storage?.provider ?? 'local',
+        s3: {
+          ...(incoming.storage?.s3 ?? DEFAULTS.storage.s3),
+          secretAccessKey: incoming.storage?.s3?.secretAccessKey?.trim()
+            ? incoming.storage.s3.secretAccessKey
+            : existing.storage?.s3?.secretAccessKey ?? '',
+        },
+        sharepoint: {
+          ...(incoming.storage?.sharepoint ?? DEFAULTS.storage.sharepoint),
+          clientSecret: incoming.storage?.sharepoint?.clientSecret?.trim()
+            ? incoming.storage.sharepoint.clientSecret
+            : existing.storage?.sharepoint?.clientSecret ?? '',
+        },
+      },
     };
 
     await writeJson('settings.json', merged);
+    invalidateProvider();
 
-    // Return the same safe shape as GET
     const keysConfigured = {
       deeplApiKey: !!merged.translation?.deeplApiKey?.trim(),
       aiApiKey: !!merged.ai?.apiKey?.trim(),
+      s3SecretKey: !!merged.storage?.s3?.secretAccessKey?.trim(),
+      sharePointClientSecret: !!merged.storage?.sharepoint?.clientSecret?.trim(),
     };
     const safe: AppSettings = {
       ...merged,
       translation: { deeplApiKey: '' },
       ai: { ...merged.ai, apiKey: '' },
+      storage: {
+        ...merged.storage,
+        s3: { ...merged.storage.s3, secretAccessKey: '' },
+        sharepoint: { ...merged.storage.sharepoint, clientSecret: '' },
+      },
     };
 
     res.json({ success: true, data: safe, keysConfigured });

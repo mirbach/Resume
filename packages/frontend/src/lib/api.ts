@@ -10,6 +10,8 @@ import type {
 export interface KeysConfigured {
   deeplApiKey: boolean;
   aiApiKey: boolean;
+  s3SecretKey: boolean;
+  sharePointClientSecret: boolean;
 }
 
 export interface SettingsResponse {
@@ -146,7 +148,7 @@ async function requestSettingsRaw(url: string, options?: RequestInit): Promise<S
   if (!json.success) throw new Error(json.error || 'API request failed');
   return {
     settings: json.data as AppSettings,
-    keysConfigured: json.keysConfigured ?? { deeplApiKey: false, aiApiKey: false },
+    keysConfigured: json.keysConfigured ?? { deeplApiKey: false, aiApiKey: false, s3SecretKey: false, sharePointClientSecret: false },
   };
 }
 

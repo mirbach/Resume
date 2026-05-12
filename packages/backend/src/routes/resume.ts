@@ -1,20 +1,29 @@
 import { Router, Request, Response } from 'express';
-import { readJson, writeJson } from '../lib/storage.js';
+import { readJson, subToUserId } from '../lib/storage.js';
+import { getProvider, ensureUserData } from '../lib/get-provider.js';
 import { resumeDataSchema } from '../lib/schemas.js';
 import type { ResumeData } from '../types.js';
 
 const router = Router();
 
 // GET /api/resume - get the full bilingual resume data
-// Falls back to resume.example.json on a fresh clone where resume.json doesn't exist yet.
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
+    const provider = await getProvider();
     let data: ResumeData;
-    try {
-      data = await readJson<ResumeData>('resume.json');
-    } catch {
-      data = await readJson<ResumeData>('resume.example.json');
+
+    if (req.user) {
+      await ensureUserData(provider, req.user.sub);
+      const key = `users/${subToUserId(req.user.sub)}/resume.json`;
+      data = await provider.readJson<ResumeData>(key);
+    } else {
+      try {
+        data = await provider.readJson<ResumeData>('resume.json');
+      } catch {
+        data = await readJson<ResumeData>('resume.example.json');
+      }
     }
+
     res.json({ success: true, data });
   } catch {
     res.status(404).json({ success: false, error: 'Resume data not found' });
@@ -31,9 +40,18 @@ router.put('/', async (req: Request, res: Response) => {
       return;
     }
     const data = result.data as ResumeData;
-    await writeJson('resume.json', data);
+    const provider = await getProvider();
+
+    if (req.user) {
+      await ensureUserData(provider, req.user.sub);
+      const key = `users/${subToUserId(req.user.sub)}/resume.json`;
+      await provider.writeJson(key, data);
+    } else {
+      await provider.writeJson('resume.json', data);
+    }
+
     res.json({ success: true, data });
-  } catch (error) {
+  } catch {
     res.status(500).json({ success: false, error: 'Failed to save resume data' });
   }
 });

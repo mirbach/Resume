@@ -206,10 +206,37 @@ export interface CarReviewResult {
   overallFeedback: string;
 }
 
+export type StorageProviderType = 'local' | 's3' | 'sharepoint';
+
+export interface S3StorageSettings {
+  bucket: string;
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  prefix: string;
+  endpoint: string;
+}
+
+export interface SharePointStorageSettings {
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  siteUrl: string;
+  driveName: string;
+  folderPath: string;
+}
+
+export interface StorageSettings {
+  provider: StorageProviderType;
+  s3: S3StorageSettings;
+  sharepoint: SharePointStorageSettings;
+}
+
 export interface AppSettings {
   auth: AuthSettings;
   translation: TranslationSettings;
   ai: AiSettings;
+  storage: StorageSettings;
 }
 
 // ============================================

@@ -1,4 +1,22 @@
 // ============================================
+// Auth user context — attached to req.user by authMiddleware when OIDC is enabled
+// ============================================
+
+export interface AuthUser {
+  sub: string;
+  email?: string;
+  name?: string;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthUser;
+    }
+  }
+}
+
+// ============================================
 // Resume Data Types (CAR + ELITE frameworks)
 // ============================================
 
@@ -199,10 +217,37 @@ export interface AiSettings {
   model: string;
 }
 
+export type StorageProviderType = 'local' | 's3' | 'sharepoint';
+
+export interface S3StorageSettings {
+  bucket: string;
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  prefix: string;
+  endpoint: string;
+}
+
+export interface SharePointStorageSettings {
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  siteUrl: string;
+  driveName: string;
+  folderPath: string;
+}
+
+export interface StorageSettings {
+  provider: StorageProviderType;
+  s3: S3StorageSettings;
+  sharepoint: SharePointStorageSettings;
+}
+
 export interface AppSettings {
   auth: AuthSettings;
   translation: TranslationSettings;
   ai: AiSettings;
+  storage: StorageSettings;
 }
 
 // ============================================
