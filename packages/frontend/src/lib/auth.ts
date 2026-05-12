@@ -143,6 +143,30 @@ export function isTokenExpired(token: string): boolean {
   }
 }
 
+/**
+ * Decode the stored id_token and return basic user identity claims.
+ * No signature verification — for display purposes only.
+ */
+export function getUser(): { sub: string; email?: string; name?: string } | null {
+  const token = getStoredIdToken() ?? getStoredToken();
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+    ) as { sub?: string; email?: string; name?: string; preferred_username?: string };
+    if (!payload.sub) return null;
+    return {
+      sub: payload.sub,
+      email: payload.email,
+      name: payload.name ?? payload.preferred_username,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function validateOAuthState(returned: string | null): boolean {
   const stored = sessionStorage.getItem(STATE_KEY);
   if (!stored || stored !== returned) return false;

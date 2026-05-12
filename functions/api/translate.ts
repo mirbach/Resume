@@ -2,8 +2,8 @@ import { type Env, ok, err, authGuard } from '../_shared/helpers';
 
 // POST /api/translate
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  const denied = await authGuard(request, env);
-  if (denied) return denied;
+  const guard = await authGuard(request, env);
+  if (guard instanceof Response) return guard;
 
   try {
     const { text, from, to } = await request.json() as { text: string; from: string; to: string };

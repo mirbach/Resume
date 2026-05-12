@@ -35,8 +35,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 // PUT /api/settings
 // Merges with existing settings — key fields are only overwritten if a non-empty value is provided.
 export const onRequestPut: PagesFunction<Env> = async ({ request, env }) => {
-  const denied = await authGuard(request, env);
-  if (denied) return denied;
+  const guard = await authGuard(request, env);
+  if (guard instanceof Response) return guard;
 
   try {
     const incoming = (await request.json()) as AppSettings;

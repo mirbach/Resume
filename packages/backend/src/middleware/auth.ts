@@ -94,11 +94,17 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     const jwksUri = await resolveJwksUri(authority);
     const JWKS = getJwks(jwksUri);
 
-    await jwtVerify(token, JWKS, {
+    const { payload } = await jwtVerify(token, JWKS, {
       issuer: authority.replace(/\/$/, ''),
       // Validate audience only when clientId is set (some providers omit it)
       ...(clientId ? { audience: clientId } : {}),
     });
+
+    req.user = {
+      sub: payload.sub as string,
+      email: payload['email'] as string | undefined,
+      name: (payload['name'] ?? payload['preferred_username']) as string | undefined,
+    };
 
     next();
   } catch (err) {

@@ -33,8 +33,8 @@ Only provide improved text in suggestions when the score is below 4. Return vali
 
 // POST /api/ai/review
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  const denied = await authGuard(request, env);
-  if (denied) return denied;
+  const guard = await authGuard(request, env);
+  if (guard instanceof Response) return guard;
 
   try {
     const { challenge, action, result, lang = 'en' } = await request.json() as {

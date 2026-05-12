@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ResumeData, ResumeTheme, AppSettings, Language, ResolvedResume } from './lib/types';
 import { getResume, saveResume, getTheme, getThemes, getSettings, setAuthToken, exportResumeJson, importResumeJson, AuthExpiredError } from './lib/api';
-import { buildAuthUrl, exchangeCodeForToken, getApiToken, storeToken, validateOAuthState, clearToken, buildLogoutUrl, isTokenExpired } from './lib/auth';
+import { buildAuthUrl, exchangeCodeForToken, getApiToken, storeToken, validateOAuthState, clearToken, buildLogoutUrl, isTokenExpired, getUser } from './lib/auth';
 import { resolveResume } from './lib/resolve';
 import ResumeEditor from './components/editor/ResumeEditor';
 import ResumeLayout from './components/resume/ResumeLayout';
@@ -67,6 +67,7 @@ export default function App() {
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ name?: string; email?: string } | null>(null);
   const [showPreview, setShowPreview] = useState(true);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -92,7 +93,10 @@ export default function App() {
       try {
         // Restore any stored token BEFORE making API calls so auth headers are present
         const apiToken = getApiToken();
-        if (apiToken) setAuthToken(apiToken);
+        if (apiToken) {
+          setAuthToken(apiToken);
+          setCurrentUser(getUser());
+        }
 
         // Always load settings first (settings endpoint is public)
         const settingsResp = await getSettings().catch(() => null);
@@ -214,6 +218,7 @@ export default function App() {
       .then(async ({ accessToken, idToken }) => {
         storeToken(accessToken, idToken);
         setAuthToken(idToken ?? accessToken);
+        setCurrentUser(getUser());
         window.history.replaceState({}, '', window.location.pathname);
         // Now that we have a valid token, load the resume + theme data
         await loadResumeData();
@@ -305,6 +310,7 @@ export default function App() {
     sessionStorage.setItem(APP_MODE_KEY, 'preview');
     clearToken();
     setAuthToken(null);
+    setCurrentUser(null);
 
     if (logoutUrl) {
       window.location.href = logoutUrl;
@@ -520,13 +526,24 @@ export default function App() {
             <Settings size={16} />
           </button>
           {appSettings?.auth.enabled && (
-            <button
-              onClick={handleLogout}
-              aria-label="Sign out"
-              className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
-            >
-              <LogOut size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              {currentUser && (
+                <span
+                  className="text-xs text-gray-500 dark:text-gray-400 max-w-[140px] truncate"
+                  title={currentUser.email ?? currentUser.name}
+                >
+                  {currentUser.name ?? currentUser.email}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Sign out"
+                className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
           )}
         </div>
       </header>

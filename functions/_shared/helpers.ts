@@ -73,6 +73,7 @@ interface JwtClaims {
   iss?: string;
   aud?: string | string[];
   exp?: number;
+  sub?: string;
 }
 
 function base64UrlDecodeToBuffer(str: string): ArrayBuffer {
@@ -103,9 +104,13 @@ async function importSigningKey(key: JwkKey, alg: string): Promise<CryptoKey> {
   throw new Error(`Unsupported JWT algorithm: ${alg}`);
 }
 
-async function verifyJwt(token: string, authority: string, clientId: string): Promise<boolean> {
+/**
+ * Verify a JWT and return the sub claim on success, or null if invalid.
+ * Uses Web Crypto API (Cloudflare Workers compatible).
+ */
+async function verifyJwt(token: string, authority: string, clientId: string): Promise<string | null> {
   const parts = token.split('.');
-  if (parts.length !== 3) return false;
+  if (parts.length !== 3) return null;
 
   let header: JwtHeader;
   let claims: JwtClaims;
@@ -113,67 +118,87 @@ async function verifyJwt(token: string, authority: string, clientId: string): Pr
     header = jsonDecode(parts[0]) as JwtHeader;
     claims = jsonDecode(parts[1]) as JwtClaims;
   } catch {
-    return false;
+    return null;
   }
 
   // Expiry check
   const now = Math.floor(Date.now() / 1000);
-  if (claims.exp !== undefined && claims.exp < now) return false;
+  if (claims.exp !== undefined && claims.exp < now) return null;
 
   // Issuer check — normalize both sides (strip trailing slashes)
   if (claims.iss) {
     const tokenIss = claims.iss.replace(/\/$/, '');
     const expectedIss = authority.replace(/\/$/, '');
-    if (tokenIss !== expectedIss) return false;
+    if (tokenIss !== expectedIss) return null;
   }
 
   // Audience check — we validate using id_token (aud = clientId per OIDC spec).
   if (claims.aud !== undefined) {
     const aud = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
-    if (!aud.includes(clientId)) return false;
+    if (!aud.includes(clientId)) return null;
   }
 
   // Fetch JWKS via discovery
   const base = authority.replace(/\/$/, '');
   const discoveryRes = await fetch(`${base}/.well-known/openid-configuration`);
-  if (!discoveryRes.ok) return false;
+  if (!discoveryRes.ok) return null;
   const oidcConfig = (await discoveryRes.json()) as OidcConfig;
 
   const jwksRes = await fetch(oidcConfig.jwks_uri);
-  if (!jwksRes.ok) return false;
+  if (!jwksRes.ok) return null;
   const jwks = (await jwksRes.json()) as { keys: JwkKey[] };
 
   const signingKey = header.kid
     ? jwks.keys.find((k) => k.kid === header.kid)
     : jwks.keys.find((k) => !k.use || k.use === 'sig');
-  if (!signingKey) return false;
+  if (!signingKey) return null;
 
   const alg = header.alg;
   let cryptoKey: CryptoKey;
   try {
     cryptoKey = await importSigningKey(signingKey, alg);
   } catch {
-    return false;
+    return null;
   }
 
   const signatureInput = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
   const signature = base64UrlDecodeToBuffer(parts[2]);
 
+  let valid = false;
   try {
     if (alg.startsWith('RS')) {
-      return await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, signatureInput);
-    }
-    if (alg.startsWith('ES')) {
+      valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, signatureInput);
+    } else if (alg.startsWith('ES')) {
       const hash = alg === 'ES256' ? 'SHA-256' : 'SHA-384';
-      return await crypto.subtle.verify({ name: 'ECDSA', hash }, cryptoKey, signature, signatureInput);
+      valid = await crypto.subtle.verify({ name: 'ECDSA', hash }, cryptoKey, signature, signatureInput);
     }
   } catch {
-    return false;
+    return null;
   }
-  return false;
+
+  return valid ? (claims.sub ?? '') : null;
 }
 
-export async function authGuard(request: Request, env: Env): Promise<Response | null> {
+/**
+ * Deterministically map a sub claim to a KV-safe userId string.
+ * SHA-256 hex — same algorithm as the Express backend's subToUserId().
+ */
+async function subToUserId(sub: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sub));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/**
+ * Auth guard for Cloudflare Workers route handlers.
+ *
+ * Returns:
+ *   - A Response (4xx/5xx) if the request is denied — callers must return it immediately.
+ *   - A string userId (SHA-256 hex of the sub claim) when auth is enabled and the token is valid.
+ *   - null when auth is disabled (single-user / initial-setup mode).
+ */
+export async function authGuard(request: Request, env: Env): Promise<Response | string | null> {
   let settings: AppSettings;
   try {
     const raw = await env.RESUME_KV.get('settings');
@@ -194,14 +219,13 @@ export async function authGuard(request: Request, env: Env): Promise<Response | 
 
   // Validate JWT signature, expiry, issuer, and audience
   try {
-    const valid = await verifyJwt(token, settings.auth.authority, settings.auth.clientId);
-    if (!valid) return err('Invalid or expired token', 401);
+    const sub = await verifyJwt(token, settings.auth.authority, settings.auth.clientId);
+    if (!sub) return err('Invalid or expired token', 401);
+    return await subToUserId(sub);
   } catch {
     // Any unexpected error during validation → deny access (fail closed)
     return err('Token validation failed', 401);
   }
-
-  return null; // authorized
 }
 
 // ---- Default data ----
